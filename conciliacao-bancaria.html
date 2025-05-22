@@ -1,0 +1,3163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conciliador Bancário - Rivyson</title>
+    <style>
+        *{
+            margin: 0;
+            border: 0;
+            font-family: sans-serif;
+        }
+
+        :root{
+            --stadard: #084D6E;
+            --status-blue: #ABD2EF;
+            --status-green: #90EE90;
+            --status-yellow: #FDE55D;
+            --status-red: #FA697A;
+        }
+
+        dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        body{
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header{
+            box-sizing: border-box;
+            background-color: var(--stadard);
+            width: 100%;
+            height: 10vh;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            z-index: 1;
+        }
+        .header #razaosocial,
+        .header #cnpj{
+            outline: none;
+            background-color: #084D6E;
+            font-size: xx-large;  
+            color: white;      
+        }
+        .header button{
+            font-size: larger;
+            border: 0;
+            color: #084D6E;
+            border-radius: 5px;
+            padding: 0px 15px;
+            cursor: pointer;
+        }
+
+        .monthly-status{
+            box-sizing: border-box;
+            border-bottom: 1px solid #084D6E;
+            background-color: white;
+            height: 3.5vh;
+            width: 100%;
+            position: fixed;
+            top: 10vh;
+            z-index: 1;
+        }
+        .monthly-status ul{
+            box-sizing: border-box;
+            list-style: none;
+            padding: 0;
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .monthly-status li{
+            width: 100%;
+            text-align: center;
+            padding: 5px 0px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .month-status{
+            border: 1px solid black;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10%;
+        }
+        .greenStatus{
+            background-color: var(--status-green)
+        }
+        .yellowStatus{
+            background-color: var(--status-yellow)
+        }
+        .redStatus{
+            background-color: var(--status-red)
+        }
+
+        .options-menu{
+            box-sizing: border-box;
+            background-color: white;
+            display: flex;
+            padding: 10px 5px;
+            height: 4.5vh;
+            width: 100%;
+            align-items: center;
+            justify-content: space-around;
+            position: fixed;
+            top: 13.5vh;
+            z-index: 1;
+        }
+        .options-menu button{
+            background-color: var(--stadard);
+            border-radius: 3px;
+            padding: 5px 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filter{
+            padding: 15px 25px;
+            box-sizing: border-box;
+            width: 100%;
+            height: 6vh;
+            display: grid;
+            grid-template-columns: max-content max-content auto max-content max-content max-content max-content;
+            align-items: center;
+            justify-items: center;
+            column-gap: 30px;
+            background-color: var(--stadard);
+            border-bottom: 1px solid var(--stadard);    
+            position: fixed;
+            top: 18vh;
+            z-index: 1;
+        }
+        .filter select{
+            box-sizing: border-box;
+            outline: 1px solid black;
+            border-radius: 3px;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        .filter button{
+            padding: 6px 15px;
+            border-radius: 3px;
+            justify-self: start;
+            cursor: pointer;
+            border: 1px solid var(--stadard);
+        }
+        .filter input[type='search']{
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 200px;
+            outline: 1px solid black;
+            border-radius: 3px;
+            padding: 5px;
+        }
+        .filter label{
+            display: flex;
+            gap: 5px;
+        }
+
+        .account-balance-info{
+            box-sizing: border-box;
+            display: flex;
+            padding: 25px 5px;
+            width: 100%;
+            height: 6vh;
+            align-items: center;
+            justify-content: space-around;
+            position: fixed;
+            top: 24vh;
+            z-index: 1;
+        }
+        .account-balance-info label{
+            box-sizing: border-box;
+            display: flex;
+            border: 1px solid var(--stadard);
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .account-balance-info label input{
+            display: flex;
+            width: 15ch;
+            text-align: end;
+            outline: none;
+        }
+        .account-balance-info button{
+            box-sizing: border-box;
+            padding: 5px 10px;
+            border-radius: 3px;
+            justify-self: start;
+            cursor: pointer;
+            border: 1px solid var(--stadard);
+        }
+
+        .transactions{
+            box-sizing: border-box;
+            width: 100%;
+            height: calc(100vh - 30vh);
+            position: fixed;
+            top: 30vh;
+            z-index: 0;
+        }
+        .transactions hr{
+            outline: 1px solid var(--stadard);
+        }
+        .transactions .transactions-header{
+            position: fixed;
+            top: 30vh;
+            z-index: 1;
+            box-sizing: border-box;
+            padding: 10px;
+            width: 100%;
+            height: 5vh;
+            display: grid;
+            grid-template-columns: 50px 15ch 10% auto 20ch 15ch 20%;
+            column-gap: 20px;
+            align-items: center;
+            color: #084D6E;
+            border-bottom: 1px solid #084D6E;
+        }
+        .transactions .transactions-body ul{
+            position: absolute;
+            top:5vh;
+            height: calc(100vh - 35vh);
+            width: 100%;
+            padding: 0;
+            overflow-y: auto;
+        }
+        .transactions .transactions-body li{
+            box-sizing: border-box;
+            padding: 10px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 50px 15ch 10% auto 20ch 15ch 20%;
+            column-gap: 20px;
+            align-items: center;
+            border-bottom: 1px solid #084D6E;
+        }
+        .transactions .transactions-body li:nth-child(even){
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .transactions .transactions-body li > span:nth-of-type(5){
+            padding-left: 25px;
+        }
+        .transactions input[type="checkbox"]{
+            scale: 1.3;
+            cursor: pointer;
+        }
+        .transactions .transactions-body li > span:nth-of-type(6){
+            box-sizing: border-box;
+            border: 1px solid var(--stadard);
+            width: 14ch;
+            padding: 2.5px;
+            border-radius: 3px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .transactions .transactions-body li > span:nth-of-type(7){
+            padding-right: 35px;
+        }
+
+        #notification-modal{
+            position: fixed;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            min-width: 200px;
+            justify-content: center;
+        }
+        @keyframes get_in {
+            0% {
+                top: -50px;
+            }
+            50% {
+                top: 40px
+            }
+            100% {
+                top: 25px;
+            }
+        }
+        @keyframes get_out {
+            0% {
+                top: 25px;
+            }
+            50% {
+                top: 50px
+            }
+            100% {
+                top: -50px;
+            }
+        }
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 5px solid transparent;
+            border-top: 5px solid #3498db; /* Cor da bolinha */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 20px;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .done-check {
+            content: "";
+            width: 10px;
+            height: 25px;
+            border: solid black;
+            border-width: 0 5px 5px 0;
+            transform: rotate(45deg);
+            opacity: 0;
+            animation: check-animation 0.5s ease-in-out forwards;
+
+            position: relative;
+            right: 10px;
+            top: -5px; /* Ajuste a altura conforme necessário */
+        }
+        @keyframes check-animation{
+            0% {
+                opacity: 0;
+                transform: rotate(45deg) scale(0);
+            }
+            100% {
+                opacity: 1;
+                transform: rotate(45deg) scale(1);
+            }
+        }
+    </style>
+    <style>
+        dialog hr{
+            border: 0.5px solid #084D6E;
+        }
+
+        #newbank-modal > div{
+            display: grid;
+            width: 500px;
+            grid-template-columns: 0.5fr 0.5fr;
+            row-gap: 15px;
+        }
+        #newbank-modal > div input{
+            border: 1px solid #084D6E;
+            text-align: center;
+            padding: 5px;
+            border-radius: 2.5px;
+        }
+        #newbank-modal > div button:nth-of-type(1){
+            padding: 5px 20px;
+            border: 1px solid #084D6E;
+            background-color: white;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #newbank-modal > div button:nth-of-type(2){
+            padding: 5px 20px;
+            border: 1px solid #084D6E;
+            background-color: #084D6E;;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        #newbank-modal > div select{
+            border: 1px solid #084D6E;
+            text-align: center;
+            padding: 5px;
+            border-radius: 2.5px;
+            margin-bottom: 5px;
+        }
+
+        #importofx-modal > div{
+            display: grid;
+            width: 500px;
+            grid-template-columns: 0.5fr 0.5fr;
+            row-gap: 15px;
+        }
+        #importofx-modal > div select{
+            box-sizing: border-box;
+            padding: 5px 15px;
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+        }
+        #importofx-modal > div button:nth-of-type(1),
+        #importofx-modal > div > span{
+            justify-self: center;
+            margin-bottom: 10px;
+        }
+        #importofx-modal > div button:nth-of-type(2){
+            padding: 5px 20px;
+            border: 1px solid #084D6E;
+            background-color: white;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #importofx-modal > div button:nth-of-type(1),
+        #importofx-modal > div button:nth-of-type(3){
+            padding: 5px 20px;
+            border: 1px solid #084D6E;
+            background-color: #084D6E;;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #chartOfAccounts-modal > div{
+            box-sizing: border-box;
+            width: 55vw;
+            min-width: 600px;
+            height: 80vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        #chartOfAccounts-modal > div > button:nth-of-type(1){
+            background-color: white;
+            position: absolute;
+            top: 0;
+            right: 0;
+            cursor: pointer;
+        }
+        #chartOfAccounts-modal > div > button:nth-of-type(2){
+            background-color: #084D6E;
+            color: white;
+            font-size: xx-large;
+            padding: 0px 15px;
+            border-radius: 3px;
+            height: 35px;
+            margin: 15px 0px;
+            width: fit-content;
+            align-self: center;
+            cursor: pointer;
+            position: absolute;
+            bottom: 0;
+        }
+        #chartOfAccounts-modal > div > ul{
+            box-sizing: border-box;
+            list-style: none;
+            padding: 3px;
+            margin-top: 35px;
+            height: calc(100% - 125px);
+            overflow: auto;
+        }
+        #chartOfAccounts-modal > div > ul li{
+            box-sizing: border-box;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 15% calc(75% - 30px) 5% 5%;
+            column-gap: 10px;
+            
+            margin-bottom: 10px;
+        }
+        #chartOfAccounts-modal > div > ul li input{
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+            padding: 5px;
+        }
+        #chartOfAccounts-modal > div > ul li button{
+            background-color: #084D6E;
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        #chartOfAccounts-modal > div > button:nth-of-type(3){
+            background-color: white;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        
+
+        #edit-single-transaction > div,
+        #edit-multiple-transactions > div{
+            box-sizing: border-box;
+            width: 35vw;
+            min-width: 600px;
+            height: 40vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 20px;
+        }
+        #edit-single-transaction > div input,
+        #edit-single-transaction > div select,
+        #edit-single-transaction > div .selectInChartOfAccount,
+        #edit-multiple-transactions > div input,
+        #edit-multiple-transactions > div select,
+        #edit-multiple-transactions > div .selectInChartOfAccount{
+            box-sizing: border-box;
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+            padding: 8px;
+            height: fit-content;
+            width: 100%;
+        }
+        #edit-single-transaction > div .selectInChartOfAccount:focus,
+        #edit-multiple-transactions > div .selectInChartOfAccount:focus{
+            outline: 1px solid black;
+        }
+        #edit-single-transaction > div button:nth-of-type(1),
+        #edit-multiple-transactions > div button:nth-of-type(1){
+            padding: 10px 35px;
+            border: 1px solid #084D6E;
+            background-color: white;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            color: #084D6E;
+            cursor: pointer;
+            height: fit-content;
+            margin-right: 20px;
+        }
+        #edit-single-transaction > div button:nth-of-type(2),
+        #edit-multiple-transactions > div button:nth-of-type(2){
+            padding: 10px 35px;;
+            border: 1px solid #084D6E;
+            background-color: #084D6E;;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            height: fit-content;
+        }
+        #edit-single-transaction .ml-hint{
+            position: absolute;
+            margin-top: 10px;
+            color: gray;
+        }
+        .boxOfChartOfAccount{
+            box-sizing: border-box;
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            padding: 10px;
+            height: 250px;
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+            z-index: 1;
+        }
+        .boxOfChartOfAccount input{
+            margin-bottom: 20px
+        }
+        .boxOfChartOfAccount ul{
+            height: calc(100% - 3.5rem);
+            padding: 0;
+            list-style: none;
+            overflow: auto;
+        }
+        .boxOfChartOfAccount li{
+            padding: 8px;
+        }
+        .boxOfChartOfAccount li:hover{
+            background-color: #084D6E;
+            color: white;
+            cursor: pointer;
+        }
+
+        #automatic-classification > div{
+            box-sizing: border-box;
+            width: 85vw;
+            min-width: 600px;
+            height: 80vh;
+            column-gap: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #automatic-classification > div > button:nth-of-type(1),
+        #csvExport > div > button:nth-of-type(1){
+            background-color: white;
+            position: absolute;
+            top: 0;
+            right: 0;
+            cursor: pointer;
+            padding: 15px 20px;
+        }
+        #automatic-classification > div hr{
+            width: 100%;
+        }
+        #automatic-classification > div > span{
+            padding: 25px 0px;
+            width: 60%;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+        #automatic-classification > div > span legend{
+            text-align: start;
+        }
+        #automatic-classification > div > span select{
+            box-sizing: border-box;
+            padding: 5px 15px;
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+        }
+        #automatic-classification > div > span button{
+            padding: 6px 15px;;
+            border: 1px solid #084D6E;
+            background-color: #084D6E;;
+            width: fit-content;
+            justify-self: center;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            height: fit-content;
+        }
+        #automatic-classification > div > ul{
+            padding: 0;
+            list-style: none;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            margin: 2px;
+        }
+        #automatic-classification > div > ul li{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0px;
+        }
+        #automatic-classification > div > ul li button{
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #automatic-classification > div > div{
+            width: 100%;
+        }
+        #automatic-classification > div label{
+            padding: 5px;
+            width: 100%;
+        }
+        #automatic-classification > div label legend{
+            font-size: small;
+        }
+        #automatic-classification > div label input,
+        #automatic-classification > div label select{
+            box-sizing: border-box;
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+            padding: 8px;
+            height: fit-content;
+            width: 100%;
+        }
+        #automatic-classification > div > button:nth-of-type(2){
+            background-color: #084D6E;
+            color: white;
+            cursor: pointer;
+            padding: 10px 40px;
+            margin-top: 15px;
+            border-radius: 3px;
+        }
+
+        #csvExport > div{
+            box-sizing: border-box;
+            width: 35vw;
+            min-width: 600px;
+            height: 30vh;
+            min-height: 300px;
+            column-gap: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #csvExport > div H3{
+            margin-bottom: 15px;
+        }
+        #csvExport > div label{
+            padding: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #csvExport > div select{
+            box-sizing: border-box;
+            padding: 5px 15px;
+            border: 1px solid #084D6E;
+            border-radius: 3px;
+            width: 50%;
+            text-align: center;
+        }
+        #csvExport > div span{
+            color: gray;
+            margin-top: 15px;
+            text-wrap: nowrap;
+        }
+        #csvExport > div  > button:nth-of-type(2){
+            background-color: #084D6E;
+            color: white;
+            cursor: pointer;
+            padding: 10px 40px;
+            margin-top: 25px;
+            border-radius: 3px;
+        }
+
+        #fragment-transaction > div{
+            box-sizing: border-box;
+            width: 45vw;
+            min-width: 600px;
+            height: 45vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #fragment-transaction > div h3{
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        #fragment-transaction > div label{
+            box-sizing: border-box;
+            width: 100%;
+        }
+        #fragment-transaction > div input{
+            padding: 8px;
+        }
+        #fragment-transaction > div > div{
+            box-sizing: border-box;
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            padding: 15px 15px 15px 0px;
+        }
+        #fragment-transaction > div > div button{
+            font-size: 1.8rem;
+            width: 40px;
+            height: 40px;
+            padding: 3px;
+            color: white;
+            border-radius: 3px;
+            background-color: var(--stadard);
+            cursor: pointer;
+            text-align: center;
+        }
+        #fragment-transaction > div ul{
+            padding: 0;
+            list-style: none;
+            height: 20vh;
+            overflow-y: auto;
+        }
+        #fragment-transaction > div li{
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #fragment-transaction > div li label:nth-child(2){
+            width: 25%;
+        }
+        #fragment-transaction > div li input{
+            box-sizing: border-box;
+            width: 100%;
+            border: 1px solid var(--stadard);
+            border-radius: 3px;
+        }
+        #fragment-transaction > div li button{
+            padding: 6px;
+            height: 36px;
+            margin-top: 15px;
+        }
+        #fragment-transaction > div > span{
+            display: flex;
+            justify-content: end;
+            gap: 25px;
+            margin-top: 15px;
+        }
+        #fragment-transaction > div > span button{
+            width: 120px;
+            padding: 8px;
+            color: var(--stadard);
+            border-radius: 3px;
+            background-color: white;
+            border: 1px solid var(--stadard);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <input id="razaosocial" type="text" placeholder="Razão social" style="width: 65%;" autocomplete="off">
+        <input id="cnpj" type="text" placeholder="CNPJ" style="text-align: center;" autocomplete="off" oninput="mascaraCNPJ(this)">
+        <button onclick="save_company_infos()">CONFIRMAR</button>
+    </div>
+    <div class="monthly-status">
+        <ul>
+            <li>
+                <div class="month-status" data-month-status="01"></div>
+                <div>Jan</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="02"></div>
+                <div>Fev</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="03"></div>
+                <div>Mar</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="04"></div>
+                <div>Abr</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="05"></div>
+                <div>Mai</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="06"></div>
+                <div>Jun</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="07"></div>
+                <div>Jul</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="08"></div>
+                <div>Ago</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="09"></div>
+                <div>Set</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="10"></div>
+                <div>Out</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="11"></div>
+                <div>Nov</div>
+            </li>
+            <li>
+                <div class="month-status" data-month-status="12"></div>
+                <div>Dez</div>
+            </li>
+        </ul>
+    </div>
+    <div class="options-menu">
+        <button style="background-color: #FA697A;" onclick="clearAll()">Limpar Tudo</button>
+        <button onclick="importJSON()">Importar .JSON</button>
+        <button onclick="open_import_ofx_modal()">Importar .OFX</button>
+        <button onclick="open_exportToCSV_modal()">Exportar .CSV</button>
+        <button onclick="exportJSON()">Exportar .JSON</button>
+        <button onclick="open_bank_modal()">Contas Bancárias</button>
+        <button onclick="open_chartOfAccounts_modal()">Plano de Contas</button>
+        <button onclick="open_automatic_classification()">Conciliação Automática</button>
+    </div>
+    <div class="filter">
+        <select id="bank-selection" onchange="show_transactions()">
+            <option value="0">Todos dos Bancos</option>
+        </select>
+        <span style="display: flex;">
+            <select name="initial-month" id="initial-month">
+                <option value="01" selected>Janeiro</option>
+                <option value="02">Fevereiro</option>
+                <option value="03">Março</option>
+                <option value="04">Abril</option>
+                <option value="05">Maio</option>
+                <option value="06">Junho</option>
+                <option value="07">Julho</option>
+                <option value="08">Agosto</option>
+                <option value="09">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+            </select>
+            <select name="final-month" id="final-month">
+                <option value="01">Janeiro</option>
+                <option value="02">Fevereiro</option>
+                <option value="03">Março</option>
+                <option value="04">Abril</option>
+                <option value="05">Maio</option>
+                <option value="06">Junho</option>
+                <option value="07">Julho</option>
+                <option value="08">Agosto</option>
+                <option value="09">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12" selected>Dezembro</option>
+            </select>
+            <select name="year-filter" id="year-filter">
+                <option value="2026">2026</option>
+                <option value="2025" selected>2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+            </select>
+            <button onclick="show_transactions()">Filtrar</button>
+        </span>
+        <input id="search-transactions" type="search" placeholder="Filtro Dinâmico" oninput="dinamicFilter()" autocomplete="off">
+        <label for="only-incomes">
+            <input type="checkbox" id="only-incomes" checked onchange="show_transactions()">
+            <span style="color: white;">Entradas</span>
+        </label>
+        <label for="only-outcomes">
+            <input type="checkbox" id="only-outcomes" checked onchange="show_transactions()">
+            <span style="color: white;">Saídas</span>
+        </label>
+        <label for="only-pending">
+            <input type="checkbox" id="only-pending" onchange="show_transactions()">
+            <span style="color: white;">Pendências</span>
+        </label>
+        <label for="show-canceled">
+            <input type="checkbox" id="show-canceled" onchange="show_transactions()">
+            <span style="color: white;">Cancelados</span>
+        </label>
+    </div>
+    <div class="account-balance-info">
+        <input type="text" style="width: 8ch; text-align: center;" id="numberOfTransactions" readonly>
+        <label for="start-balance">
+            <legend>Saldo Anterior</legend>
+            <input id="start-balance" type="text" value="0,00" readonly>
+        </label>
+        <label for="incomes">
+            <legend>Entradas</legend>
+            <input id="incomes" type="text" value="0,00" readonly>
+        </label>
+        <label for="outcomes">
+            <legend>Saídas</legend>
+            <input id="outcomes" type="text" value="0,00" readonly>
+        </label>
+        <label for="end-balance">
+            <legend>Saldo Final</legend>
+            <input id="end-balance" type="text" value="0,00" readonly>
+        </label>
+        <span style="display: flex; gap: 20px;">
+            <button onclick="open_multipleEdit_modal()" title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--standard)">
+                    <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                </svg>
+            </button>
+            <button onclick="open_frament_transaction()" title="Fragmentar">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--standard)">
+                    <path d="M480-400 40-640l440-240 440 240-440 240Zm0 160L63-467l84-46 333 182 333-182 84 46-417 227Zm0 160L63-307l84-46 333 182 333-182 84 46L480-80Zm0-411 273-149-273-149-273 149 273 149Zm0-149Z"/>
+                </svg>
+            </button>
+        </span>
+    </div>
+    <div class="transactions">
+        <div class="transactions-header">
+            <h3 style="justify-self: center;"><input type="checkbox" id="checkAll-transactions" onclick="checkAllTrasactions()"></h3>
+            <h3>Data</h3>
+            <h3>Banco</h3>
+            <h3>Histórico Bancário</h3>
+            <h3 style="padding-left: 20px;">Valor</h3>
+            <h3>Situação</h3>
+            <h3>Classificação Contábil</h3>
+        </div>
+        <hr id="transactionsLoading" style="width: 0%;">
+        <div class="transactions-body">
+            <ul id="transactions-list"></ul>
+        </div>
+    </div>
+
+    <dialog id="importofx-modal">
+        <div>
+            <h4 style="grid-column: span 2; text-align: center;">IMPORTAR OFX</h4>
+            <select name="ofx-bank" id="ofx-bank" style="grid-column: span 2; text-align: center;">
+                <option value="0">Selecione um banco</option>
+            </select>
+            <span>
+                <select name="ofx-month" id="ofx-month">
+                    <option value="01" selected>Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                <select name="ofx-year" id="ofx-year">
+                    <option value="2026">2026</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                </select>
+            </span>
+            <button onclick="document.getElementById('ofx-input').click()">Selecione um arquivo</button>
+            <h6 style="grid-column: span 2; text-align: center; color: gray; margin-bottom: 10px;">Nenhum arquivo selecionado</h6>
+            <button onclick="document.getElementById('importofx-modal').close()">Cancelar</button>
+            <button onclick="import_ofx()">Confirmar</button>
+        </div>
+    </dialog>
+    <dialog id="newbank-modal">
+        <div>
+            <h4 style="grid-column: span 2; text-align: center;">CADASTRAR NOVA CONTA BANCÁRIA</h4>
+            <hr style="grid-column: span 2;">
+            <select id="bank-accounts" style="grid-column: span 2; text-align: center;" disabled></select>
+            <label for="newbank-code">
+                <span>Código do Banco: *</span>
+            </label>
+            <input type="text" id="newbank-code" autocomplete="off" oninput="mascaraNumero(this)">
+            <label for="newbank-name">
+                <span>Nome do Banco: *</span>
+            </label>
+            <input type="text" id="newbank-name" autocomplete="off">
+            <label for="newbank-account">
+                <span>Número da Conta (sem dígito): </span>
+            </label>
+            <input type="text" id="newbank-account" autocomplete="off" oninput="mascaraNumero(this)">
+            <label for="newbank-startDate">
+                <span>Competência Inicial: </span>
+            </label>
+            <input type="text" id="newbank-startDate" autocomplete="off" placeholder="MM/AAAA" maxlength="7">
+            <label for="newbank-startBalance">
+                <span>Saldo Inicial: </span>
+            </label>
+            <input type="text" id="newbank-startBalance" autocomplete="off" oninput="mascaraMoeda(this)">
+            <label for="newbank-journalCode">
+                <span>Codigo Contábil: </span>
+            </label>
+            <input type="text" id="newbank-accountCode" autocomplete="off" oninput="mascaraNumero(this)">
+
+            <button onclick="document.getElementById('newbank-modal').close()">Cancelar</button>
+            <button onclick="save_newbank()">Confirmar</button>
+        </div>
+    </dialog>
+    <dialog id="chartOfAccounts-modal">
+        <div>
+            <h3>PLANO DE CONTAS</h3>
+            <button onclick="document.getElementById('chartOfAccounts-modal').close()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                </svg>
+            </button>
+            <ul id="chart-of-accounts"></ul>
+            <button onclick="include_new_account(null)">+</button>
+            <button title="Importar Plano de Contas" onclick="import_chartOfAccountCSV()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                    <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                </svg>
+            </button>
+        </div>
+    </dialog>
+    <dialog id="edit-single-transaction" style="overflow: visible;">
+        <div>
+            <h3 style="grid-column: span 2; text-align: center;">EDITAR MOVIMENTAÇÃO BANCÁRIA</h3>
+            <span></span>
+            <input type="date" style="text-align: center;" readonly>
+            <label style="grid-column: span 2;">
+                <legend>Histórico bancário</legend>
+                <input type="text" data-transaction="historico">
+            </label>
+            <label>
+                <legend>Situação</legend>
+                <select data-transaction="situacao">
+                    <option value="PENDENTE">PENDENTE</option>
+                    <option value="CONFIRMADO">CONFIRMADO</option>
+                    <option value="CANCELADO">CANCELADO</option>
+                </select>
+            </label>
+            <label>
+                <legend>Valor</legend>
+                <input type="text" data-transaction="valor" style="text-align: end;" oninput="mascaraMoeda(this)">
+            </label>
+            <label style="grid-column: span 2; position: relative;">
+                <legend>Contra Partida</legend>
+                <button onclick="show_chartOfAccout_options('edit-single-transaction')" class="selectInChartOfAccount" style="cursor: pointer; width: 100%; text-align: start; font: 1em sans-serif; padding: 8px;">Selecione uma conta</button>
+                <div class="boxOfChartOfAccount" style="display: none;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <input type="text">
+                        <button onclick="close_chartOfAccount_options('edit-single-transaction')" style="padding: 8px; justify-self: end; margin-right: 0; margin-left: 20px;">Fechar</button>
+                    </div>
+                    <ul id="chartOfAccounts-options"></ul>
+                </div>
+                <span class="ml-hint" style="display: none;">[ Classificação sugerida pelo ML ]</span>
+            </label>
+            <span></span>
+            <span style="justify-self: end;">
+                <button onclick="document.getElementById('edit-single-transaction').close()">Cancelar</button>
+                <button onclick="update_transction(document.querySelector('#edit-single-transaction span').textContent)">Confirmar</button>
+            </span>
+        </div>
+    </dialog>
+    <dialog id="edit-multiple-transactions" style="overflow: visible; height: 35vh;">
+        <div>
+            <h3 style="grid-column: span 2; text-align: center;">EDITAR ( 0 ) MOVIMENTAÇÕES BANCÁRIAS</h3>
+            <label style="grid-column: span 2; position: relative;">
+                <legend>Situação</legend>
+                <select data-transaction="situacao">
+                    <option value="PENDENTE">PENDENTE</option>
+                    <option value="CONFIRMADO">CONFIRMADO</option>
+                    <option value="CANCELADO">CANCELADO</option>
+                </select>
+            </label>
+            <label style="grid-column: span 2; position: relative;">
+                <legend>Contra Partida</legend>
+                <button onclick="show_chartOfAccout_options('edit-multiple-transactions')" class="selectInChartOfAccount" style="cursor: pointer; width: 100%; text-align: start; font: 1em sans-serif; padding: 8px;">Selecione uma conta</button>
+                <div class="boxOfChartOfAccount" style="display: none;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <input type="text">
+                        <button onclick="close_chartOfAccount_options('edit-multiple-transactions')" style="padding: 8px; justify-self: end; margin-right: 0; margin-left: 20px;">Fechar</button>
+                    </div>
+                    <ul id="chartOfAccounts-options"></ul>
+                </div>
+            </label>
+            <span></span>
+            <span style="justify-self: end;">
+                <button onclick="document.getElementById('edit-multiple-transactions').close()">Cancelar</button>
+                <button onclick="update_multipleTransactions()">Confirmar</button>
+            </span>
+        </div>
+    </dialog>
+    <dialog id="fragment-transaction">
+        <div>
+            <h3>FRAGMENTAR MOVIMENTAÇÃO BANCÁRIA</h3>
+            <label>
+                <legend>Movimentação Original</legend>
+                <div style="display: flex; border-radius: 3px; border: 1px solid var(--stadard);">
+                    <input type="text" style="width: 15%; text-align: center;" disabled name="date">
+                    <input type="text" style="width: 70%;" disabled name="description">
+                    <input type="text" style="width: 15%; text-align: center;" disabled name="amount">
+                </div>
+            </label>
+            <p style="margin-top: 5px; color: gray;">A fragmentação cancela a movimentação original e cria novas, limitadas ao valor da original.</p>
+            <div>
+                <span id="total-fragmented" style="align-self: end;">Total Fragmentado: 0,00</span>
+                <button onclick="addNewFragmentTransactionField()">+</button>
+            </div>
+            <ul></ul>
+            <span>
+                <button onclick="document.getElementById('fragment-transaction').close();">Cancelar</button>
+                <button style="background-color: #084D6E; color: white;" onclick="fragment_transaction()">Fragmentar</button>
+            </span>
+        </div>
+    </dialog>
+    <dialog id="automatic-classification">
+        <div>
+            <h3 style="text-align: center;">CLASSIFICAÇÃO AUTOMÁTICA</h3>
+            <button onclick="document.getElementById('automatic-classification').close()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                </svg>
+            </button>
+            <span>
+                <span>Executar Classificação Automática no mês de: </span>
+                <select id="execution-month">
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                <button onclick="execute_automatic_association('manual')">Executar</button>
+            </span>
+            <hr>
+            <ul id="listOfClassificationSaved"></ul>
+            <hr>
+            <div>
+                <span style="display: flex; align-items: end;">
+                    <label style="width: 20ch">
+                        <legend>Quando o histórico</legend>
+                        <select id="whereShouldLook">
+                            <option value="ifStartsWith">Começa com</option>
+                            <option value="ifIncludes" selected>Contém</option>
+                            <option value="ifEndsWith">Termina com</option>
+                        </select>
+                    </label>
+                    <label>
+                        <legend></legend>
+                        <input type="text" id="whenFindThis" autocomplete="off">
+                    </label>
+                </span>
+                <span>
+                    <label>
+                        <legend>Classificar como</legend>
+                        <select id="classifyAs">
+                            <option value="">Selecione uma conta</option>
+                        </select>
+                    </label>
+                </span>
+            </div>
+            <button onclick="associate_description()">Vincular</button>
+        </div>
+    </dialog>
+    <dialog id="csvExport">
+        <div>
+            <h3>EXPORTAR CSV</h3>
+            <button onclick="document.getElementById('csvExport').close()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                </svg>
+            </button>
+            <label>
+                <legend>Escolha o Banco: </legend>
+                <select id="csv-bank">
+
+                </select>
+            </label>
+            <label>
+                <legend>Escolha o mês: </legend>
+                <select id="csv-month">
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+            </label>
+            <span>*Obs: O arquivo só será gerado quando todo o mês escolhido estiver CONFIRMADO</span>
+            <button onclick="exportToCSV()">Gerar CSV</button>
+        </div>
+    </dialog>
+    <dialog id="notification-modal"></dialog>
+
+    <input type="file" id="json-input" style="display: none;" accept=".json">
+    <input type="file" id="ofx-input" style="display: none;" accept=".ofx">
+    <input type="file" id="csv-input" style="display: none;" accept=".csv">
+
+    <script MachineLearning>
+        class NaiveBayes {
+            constructor() {
+                this.categories = new Map();  // Usa Map() para buscas mais rápidas
+                this.totalDocuments = 0;
+                this.vocabulary = new Set(); // Usa Set() para evitar palavras duplicadas
+            }
+
+            train(phrase, category) {
+                if (!this.categories.has(category)) {
+                    this.categories.set(category, { wordCounts: new Map(), totalWords: 0, docCount: 0 });
+                }
+
+                const categoryData = this.categories.get(category);
+                const words = phrase.toLowerCase().match(/\b\w+\b/g) || [];
+
+                words.forEach(word => {
+                    this.vocabulary.add(word);
+                    categoryData.wordCounts.set(word, (categoryData.wordCounts.get(word) || 0) + 1);
+                    categoryData.totalWords++;
+                });
+
+                categoryData.docCount++;
+                this.totalDocuments++;
+            }
+
+            penalize(phrase, wrongCategory) {
+                if (!this.categories.has(wrongCategory)) return;
+
+                const categoryData = this.categories.get(wrongCategory);
+                const words = phrase.toLowerCase().match(/\b\w+\b/g) || [];
+
+                words.forEach(word => {
+                    const count = categoryData.wordCounts.get(word) || 0;
+                    if (count > 0) {
+                        categoryData.wordCounts.set(word, count - 1);
+                        categoryData.totalWords--;
+                    }
+                });
+
+                if (categoryData.docCount > 0) {
+                    categoryData.docCount--;
+                    this.totalDocuments--;
+                }
+            }
+
+            classify(phrase, threshold = 0.75) {
+                const words = phrase.toLowerCase().match(/\b\w+\b/g) || [];
+                let categoryProbabilities = new Map();
+                let sumExp = 0;
+                let maxLog = -Infinity;
+
+                for (const [category, data] of this.categories.entries()) {
+                    let categoryProbability = Math.log(data.docCount / this.totalDocuments);
+
+                    words.forEach(word => {
+                        const wordCount = data.wordCounts.get(word) || 0;
+                        const wordProbability = Math.log((wordCount + 1) / (data.totalWords + this.vocabulary.size));
+                        categoryProbability += wordProbability;
+                    });
+
+                    categoryProbabilities.set(category, categoryProbability);
+                    if (categoryProbability > maxLog) {
+                        maxLog = categoryProbability;
+                    }
+                }
+
+                for (const [category, logProb] of categoryProbabilities.entries()) {
+                    categoryProbabilities.set(category, Math.exp(logProb - maxLog));
+                    sumExp += categoryProbabilities.get(category);
+                }
+
+                let bestCategory = null;
+                let maxProbability = 0;
+                for (const [category, prob] of categoryProbabilities.entries()) {
+                    const normalizedProb = prob / sumExp;
+                    if (normalizedProb > maxProbability) {
+                        maxProbability = normalizedProb;
+                        bestCategory = category;
+                    }
+                }
+
+                return maxProbability >= threshold ? bestCategory : null;
+            }
+        
+            toJSON() {
+                const categories = {};
+                for (const [category, data] of this.categories.entries()) {
+                    categories[category] = {
+                        wordCounts: Object.fromEntries(data.wordCounts),
+                        totalWords: data.totalWords,
+                        docCount: data.docCount
+                    };
+                }
+
+                return JSON.stringify({
+                    categories,
+                    totalDocuments: this.totalDocuments,
+                    vocabulary: Array.from(this.vocabulary)
+                });
+            }
+
+            fromJSON(json) {
+                if(json.length == 0){return}
+                const data = typeof json === "string" ? JSON.parse(json) : json;
+
+                this.categories = new Map();
+                for (const [category, catData] of Object.entries(data.categories)) {
+                    this.categories.set(category, {
+                        wordCounts: new Map(Object.entries(catData.wordCounts)),
+                        totalWords: catData.totalWords,
+                        docCount: catData.docCount
+                    });
+                }
+
+                this.totalDocuments = data.totalDocuments;
+                this.vocabulary = new Set(data.vocabulary);
+            }
+
+            reset(){
+                this.categories = new Map();
+                this.totalDocuments = 0;
+                this.vocabulary = new Set();
+            }
+        }
+    </script>
+
+    <script>
+        let currentTimeout = null;
+        let isProcessing = false;
+        let isNotificationActive = false;
+
+        const MachineLearning = new NaiveBayes();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const header_info = JSON.parse(sessionStorage.getItem('header_info')) || {razao: "", cnpj: ""};
+            const bankFilter = document.getElementById('bank-selection');
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+            const razao = document.getElementById('razaosocial');
+            const cnpj = document.getElementById('cnpj');
+            const ml_data = JSON.parse(sessionStorage.getItem('machine_learning')) || [];
+            if(ml_data.length == 0){ trainML() }
+            else{ MachineLearning.fromJSON(ml_data) }
+
+            razao.value = header_info.razao || "";
+            cnpj.value = header_info.cnpj || "";
+
+            bankFilter.innerHTML = '<option value="0">Todos dos Bancos</option>';
+
+            banks.forEach(bank => {
+                bankFilter.innerHTML += `<option value="${bank.cc}">${bank.name} - cc: ${bank.cc}</option>`;
+                if(bank.id == undefined){bank.id = generateShortUUID()}
+            });
+            sessionStorage.setItem('banks', JSON.stringify(banks));
+
+            show_transactions();
+            update_status();
+
+            document.getElementById('newbank-startDate').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 6);
+                }
+                e.target.value = value;
+            });
+
+            document.getElementById('year-filter').addEventListener('change', () => {
+                sessionStorage.setItem('yearFilter', document.getElementById('year-filter').value);
+            });
+
+            document.getElementById('automatic-classification').showModal();
+        });
+
+        function open_frament_transaction(){
+            let element = document.getElementById('transactions-list').querySelectorAll('li') || [];            
+            element = Array.from(element).filter(el => el.querySelector('input[type="checkbox"]').checked == true);
+
+            if(element.length == 0) {
+                showNotification('[ERRO] Nenhuma transação marcada.');
+                hideNotification(2000);
+                return;
+            };
+            if(element.length > 1) {
+                showNotification('[ERRO] Só é possível fragmentar uma transação por vez.');
+                hideNotification(2000);
+                return;
+            };
+            if(element[0].querySelectorAll('span')[5].textContent != "PENDENTE") {
+                showNotification('[ERRO] Apenas transção com status PENDENTE podem ser fragmentadas');
+                hideNotification(2000);
+                return;
+            };
+            if(element[0].querySelector('svg[name="fragment-icon"]')){
+                showNotification('[ERRO] Movimentação já fragmentada.');
+                hideNotification(2000);
+                return;
+            }
+
+            const modal = document.getElementById('fragment-transaction');
+
+            const [date, description, amount] = modal.querySelectorAll('label input');
+
+            modal.querySelector('label').setAttribute('data-selected-transaction-id', element[0].id);
+            date.value =        element[0].querySelectorAll('span')[1].textContent;
+            description.value = element[0].querySelectorAll('span')[3].textContent;
+            amount.value =      element[0].querySelectorAll('span')[4].textContent;
+
+            const list = modal.querySelector('ul');
+
+            const defalt_li = 
+            `
+            <li>
+                <label>
+                    <legend>Descrição</legend>
+                    <input type="text">
+                </label>
+                <label>
+                    <legend>Valor</legend>
+                    <input type="text" oninput="this.value = mask(this.value, '##.###.###.##0,00')" name="fragment-value">
+                </label>
+                <button style="background-color: white; cursor: not-allowed;">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                    </svg>
+                </button>
+            </li>
+            `;
+
+            list.innerHTML = defalt_li.repeat(2);
+
+            // Remove listeners antigos antes de adicionar novos (evita duplicações)
+            list.replaceWith(list.cloneNode(true));
+            const newList = modal.querySelector('ul'); // atualizar referência
+            newList.addEventListener('input', updateFragmentTotal);
+
+            const observer = new MutationObserver(updateFragmentTotal);
+            observer.observe(newList, { childList: true, subtree: true });
+
+            // Chama uma vez ao abrir o modal
+            updateFragmentTotal();
+
+            modal.showModal();
+        }
+
+        function addNewFragmentTransactionField(){
+            const modal = document.getElementById('fragment-transaction');
+            const li = document.createElement('li');
+
+            li.innerHTML = 
+            `
+            <label>
+                <legend>Descrição</legend>
+                <input type="text">
+            </label>
+            <label>
+                <legend>Valor</legend>
+                <input type="text" oninput="this.value = mask(this.value, '##.###.###.##0,00')" name="fragment-value">
+            </label>
+            <button style="background-color: white;" cursor: poniter; onclick="this.closest('li').remove()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                </svg>
+            </button>
+            `;
+
+            modal.querySelector('ul').appendChild(li);
+        }
+
+        function updateFragmentTotal() {
+            const list = document.querySelector('#fragment-transaction ul');
+            let total = 0;
+
+            for (const input of list.querySelectorAll('input[name="fragment-value"]')) {
+                total += parseFloat(input.value.replace('.', '').replace(',', '.')) || 0;
+            }
+
+            document.getElementById('total-fragmented').textContent = 
+                `Total Fragmentado: ${mask((total * 100).toString(), '##.###.###.##0,00')}`;
+        }
+
+        function fragment_transaction(){
+            const modal = document.getElementById('fragment-transaction');
+            const id = modal.querySelector('label').getAttribute('data-selected-transaction-id');
+
+            if(document.getElementById('total-fragmented').textContent.split(':')[1].trim() != modal.querySelector('input[name="amount"]').value){
+                showNotification('[ERRO] Soma do valor dos fragmentos é diferente valor original');
+                hideNotification(2000);
+                return;
+            }
+
+            const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            const hashMap = new Map(transactions.map(item => [item.id, item]));
+
+            hashMap.get(id).status = "FRAGMENTADO";
+            hashMap.get(id).children = [];
+
+            for (const fragment of modal.querySelectorAll('ul li')){
+                const newId = generateShortUUID();
+
+                hashMap.set(newId, {
+                    id: newId,
+                    period: hashMap.get(id).period,
+                    bankID: hashMap.get(id).bankID,
+                    cc: hashMap.get(id).cc,
+                    date: hashMap.get(id).date,
+                    amount: fragment.querySelectorAll('input')[1].value.replace('.', '').replace(',', '.'),
+                    type: hashMap.get(id).type,
+                    description: fragment.querySelectorAll('input')[0].value,
+                    status: "PENDENTE",
+                    classification: "",
+                    parent: id
+                });
+
+                hashMap.get(id).children.push(newId);
+            }
+
+            sessionStorage.setItem('transactions', JSON.stringify([...hashMap.values()]));
+
+            modal.close();
+            show_transactions();
+        }
+
+        function disfragment(id){
+            if(confirm('Tem certeza que deseja desfragmentar?')){
+                const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+                const hashMap = new Map(transactions.map(item => [item.id, item]));
+
+                const parent = hashMap.get(id).parent;
+
+                for(const fragment of hashMap.get(parent).children){
+                    hashMap.delete(fragment);
+                }
+
+                hashMap.get(parent).status = "PENDENTE";
+
+                sessionStorage.setItem('transactions', JSON.stringify([...hashMap.values()]));
+                show_transactions();
+            }
+        }
+
+        function trainML(){
+            showNotification('Treinando o Machine Learning [IA]');
+
+            const DATA = JSON.parse(sessionStorage.getItem('transactions')) || [];
+
+            let index = 0;
+            let validatedTrainingCount = 0;
+            let teste = 0;
+
+            function processBatch(startIndex) {
+                const batchSize = 10; // Processa 100 itens por vez
+                const endIndex = Math.min(startIndex + batchSize, DATA.length);
+
+                for (let i = startIndex; i < endIndex; i++) {
+                    //if(validatedTrainingCount > 500){ break }
+
+                    if(DATA[i].status == "CONFIRMADO"){
+                        const type = DATA[i].amount.startsWith("-") ? "PAYMENT" : "RECEITPT";
+                        const rawValue = parseFloat(DATA[i].amount.replace(",", "."));
+
+                        const absValue = Math.abs(rawValue);
+                        let value_range = "";
+                        if (absValue < 1) value_range += "CENTAVO";
+                        else if (absValue < 100) value_range = "DEZENA";
+                        else if (absValue < 1000) value_range = "CENTENA";
+                        else if (absValue < 10_000) value_range = "MILHAR";
+                        else if (absValue < 100_000) value_range = "DEZENA_MILHAR";
+                        else if (absValue < 1_000_000) value_range = "CENTENA_MILHAR";
+                        else if (absValue < 10_000_000) value_range = "MILHAO";
+                        else value_range = "DEZENA_MILHAO";
+
+                        const day = parseInt(DATA[i].date.slice(6, 8));
+                        let date_rage = "";
+                        if (day < 10) date_rage = "INICIO_MES";
+                        else if (day < 20) date_rage = "MEIO_MES";
+                        else date_rage = "FIM_MES";
+
+                        MachineLearning.train(`${type} ${date_rage} ${DATA[i].description} ${value_range}`, DATA[i].classification);
+                        validatedTrainingCount++;
+                        showNotification(`[IA] ${validatedTrainingCount} movimentações foram usadas no treinamento.`);
+                    }
+                }
+
+                if (endIndex < DATA.length) {
+                    setTimeout(() => processBatch(endIndex), 10);
+                } else {
+                    showNotification(`[IA] ${validatedTrainingCount} classificações anteriores foram usadas no treinamento.`)
+                    setTimeout(() => {
+                        showNotification('Treinamento concluído!');
+                        hideNotification(0);
+                    }, 1000);
+                }
+            }
+
+            processBatch(index);
+        }
+
+        function clearAll(){
+            sessionStorage.setItem('header_info', JSON.stringify([]));
+            sessionStorage.setItem('banks', JSON.stringify([]));
+            sessionStorage.setItem('chart_of_accounts', JSON.stringify([]));
+            sessionStorage.setItem('transactions', JSON.stringify([]));
+            sessionStorage.setItem('associateDescriptionToAccount', JSON.stringify([]));
+
+            MachineLearning.reset();
+
+            location.reload();
+        }
+
+        function save_company_infos(){
+            sessionStorage.setItem('header_info', JSON.stringify({
+                razao: document.getElementById('razaosocial').value, 
+                cnpj: document.getElementById('cnpj').value
+            }));
+            update_status();
+        }
+
+        function save_newbank(){
+            const bank_code = document.getElementById('newbank-code');
+            const bank_name = document.getElementById('newbank-name');
+            const cc = document.getElementById('newbank-account');
+            const bankStartDate = document.getElementById('newbank-startDate');
+            const bankStartBalance = document.getElementById('newbank-startBalance');
+            const ledge_account = document.getElementById('newbank-accountCode');
+
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+
+            let lastPeriodImported = parseInt(bankStartDate.value.split('/').reverse().join("")) - 1;
+
+            if(lastPeriodImported.toString().slice(4, 6) == "00"){
+                lastPeriodImported = `${parseInt(lastPeriodImported.toString().slice(0, 4)) - 1}12`;
+            }
+
+            if(bank_code.value == "" || bank_name.value == "" || cc.value == "" || bankStartDate.value == "" || bankStartBalance.value == "" || ledge_account.value == ""){ return }
+
+            if(document.getElementById('bank-accounts').value == 0){
+                banks.push({
+                id: generateShortUUID(),
+                code: bank_code.value,
+                name: bank_name.value,
+                cc: cc.value,
+                date: bankStartDate.value,
+                balance: bankStartBalance.value,
+                jounal_account: ledge_account.value,
+                ofxImported: [],
+                lastPeriodImported: lastPeriodImported
+                });
+            }else{
+                for(const bank of banks){
+                    if(bank.id == document.getElementById('bank-accounts').value){
+                        bank.code = bank_code.value;
+                        bank.name = bank_name.value;
+                        bank.cc = cc.value;
+                        bank.date = bankStartDate.value;
+                        bank.balance = bankStartBalance.value;
+                        bank.jounal_account = ledge_account.value;
+                        bank.lastPeriodImported = lastPeriodImported;
+                        break;
+                    }
+                }
+            }
+
+            sessionStorage.setItem('banks', JSON.stringify(banks));
+
+            document.getElementById('newbank-modal').close();
+
+            const bankFilter = document.getElementById('bank-selection');
+            bankFilter.innerHTML = '<option value="0">Todos dos Bancos</option>';
+            for(const bank of banks){
+                bankFilter.innerHTML += `<option value="${bank.cc}">${bank.name} - cc: ${bank.cc}</option>`;
+            }
+
+            bank_code.value = '';
+            bank_name.value = '';
+            cc.value = '';
+            bankStartDate.value = '';
+            bankStartBalance.value = '';
+            ledge_account.value = '';
+
+            update_status();
+        }
+
+        function save_ledge_account(button) {
+            const li = button.closest('li');
+            const chartOfAccounts = JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [];
+            const hashMap = new Map(chartOfAccounts.map(item => [item.id, item]));
+
+            const code = li.querySelector('input[placeholder="Código"]').value;
+            const description = li.querySelector('input[placeholder="Descrição da conta"]').value;
+
+            if (hashMap.has(li.id)) {
+                hashMap.get(li.id).code = code;
+                hashMap.get(li.id).description = description;
+            } else {
+                const id = generateShortUUID();
+                li.id = id;
+                const newAccount = {id, code, description };
+                hashMap.set(id, newAccount);
+            }
+
+            sessionStorage.setItem('chart_of_accounts', JSON.stringify([...hashMap.values()]));
+        }
+
+        function delete_ledge_account(button){
+            const li = button.closest('li');
+
+            let chartOfAccounts = JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [];
+
+            chartOfAccounts = chartOfAccounts.filter(account => account.id !== li.id);
+
+            sessionStorage.setItem('chart_of_accounts', JSON.stringify(chartOfAccounts));
+
+            li.remove();
+        }
+
+        function open_bank_modal(){
+            const modal = document.getElementById('newbank-modal');
+
+            const banksList = JSON.parse(sessionStorage.getItem('banks')) || [];
+            const bankSelection = modal.querySelector('select');
+            const bankfields = modal.querySelectorAll('input');
+
+            if(banksList.length >= 1){
+                bankSelection.value = 0;
+                bankSelection.disabled = false;
+                bankSelection.innerHTML = "";
+                bankSelection.innerHTML = `<option value="0" selected>Cadastrar nova conta</option>`;
+                banksList.forEach(bank => {
+                    bankSelection.innerHTML += `<option value="${bank.id}">${bank.name} - cc: ${bank.cc}</option>`;
+                })
+            }else{
+                bankSelection.value = 0;
+                bankSelection.disabled = true;
+                bankSelection.innerHTML = "";
+                bankSelection.innerHTML = `<option value="0" disabled selected>Nenhuma Conta Bancária Cadastrada</option>`;
+            }
+
+            bankSelection.addEventListener('change', () => {
+                for(const bank of banksList){
+                    if(bank.id == bankSelection.value){
+                        bankfields[0].value = bank.code;
+                        bankfields[1].value = bank.name;
+                        bankfields[2].value = bank.cc;
+                        bankfields[3].value = bank.date;
+                        bankfields[4].value = bank.balance;
+                        bankfields[5].value = bank.jounal_account;
+                        break;
+                    }else{
+                        bankfields[0].value = "";
+                        bankfields[1].value = "";
+                        bankfields[2].value = "";
+                        bankfields[3].value = "";
+                        bankfields[4].value = "";
+                        bankfields[5].value = "";
+                    }
+                }
+            });
+
+            modal.showModal();
+        }
+
+        function open_import_ofx_modal(){
+            const modal = document.getElementById('importofx-modal');
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+
+            const select_bank = document.getElementById('ofx-bank');
+            select_bank.innerHTML = '<option value="0">Selecione um banco</option>';
+
+            banks.forEach(bank => {
+                select_bank.innerHTML += `<option value="${bank.cc}"> ${bank.code} - ${bank.name} - cc: ${bank.cc}</option>`;
+            });
+
+            modal.querySelector('h6').textContent = "Nenhum arquivo selecionado";
+
+            const input = document.getElementById('ofx-input');
+
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                if (!file) return;
+
+                modal.querySelector('h6').textContent = file.name;
+            });
+
+            modal.showModal();
+        }
+
+        function open_chartOfAccounts_modal(){
+            document.getElementById('chartOfAccounts-modal').showModal();
+
+            const chartOfAccounts = JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [];
+
+            document.getElementById('chart-of-accounts').innerHTML = "";
+
+            chartOfAccounts.forEach(account => {
+                include_new_account(account);
+            });
+        }
+
+        function open_transactionEdit_modal(html){
+            const modal = document.getElementById('edit-single-transaction');
+            modal.showModal();
+
+            const li = html.closest('li');
+
+            const id = modal.querySelector('span');
+            const date = modal.querySelector('input[type="date"]');
+            const description = modal.querySelectorAll('input')[1];
+            const status = modal.querySelector('select');
+            const value = modal.querySelectorAll('input')[2];
+            const ledge = modal.querySelector('button');
+
+            id.textContent = li.id;
+            const[day, month, year] = li.querySelectorAll('span')[1].textContent.split('/');
+            date.value = `${year}-${month}-${day}`;
+            description.value = li.querySelectorAll('span')[3].textContent;
+            status.value = li.querySelectorAll('span')[5].textContent;
+            value.value = li.querySelectorAll('span')[4].textContent;
+
+            if(status.value == "CONFIRMADO"){
+                const ledgeConfirmed = li.querySelectorAll('span')[6].getAttribute('data-code') + " - " + li.querySelectorAll('span')[6].textContent;
+                ledge.value = ledgeConfirmed;
+                ledge.textContent = ledgeConfirmed;
+            }else{
+                ledge.value = "";
+                ledge.textContent = "Selecione um conta";
+            }
+
+            const ml_sugestion = MachineLearning.classify(`${li.querySelectorAll('span')[1].textContent} ${li.querySelectorAll('span')[3].textContent} ${li.querySelectorAll('span')[4].textContent.replace('.', '').replace(',', '.')}`);
+            if(ml_sugestion && status.value == "PENDENTE"){
+                ledge.value = ml_sugestion;
+                ledge.textContent = ml_sugestion;
+                modal.querySelector('.ml-hint').style.display = '';
+            }else{
+                modal.querySelector('.ml-hint').style.display = 'none';
+            }
+        }
+
+        function open_multipleEdit_modal(){
+            let transactionList = document.getElementById('transactions-list').querySelectorAll('li') || [];
+            const modal = document.getElementById('edit-multiple-transactions');
+
+            transactionList = Array.from(transactionList).filter(t => t.querySelector('input[type="checkbox"').checked == true);
+
+            const title = modal.querySelector('h3');
+            modal.querySelector('select').value = "PENDENTE"
+            modal.querySelector('button').textContent = 'Selecione uma conta';
+            modal.querySelector('button').value = '';
+
+            title.textContent = `EDITAR ( ${transactionList.length} ) MOVIMENTAÇÕES BANCÁRIAS`;
+
+            modal.showModal();
+        }
+
+        function include_transaction(t){
+            const ul_transactions = document.getElementById('transactions-list');
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+
+            let bankInfo = "";
+
+            for(let i = 0; i < banks.length; i++){
+                const bank = banks[i];
+
+                if(t.cc.includes(bank.cc)){
+                    bankInfo = `${bank.name} - cc: ${bank.cc}`;
+                    break;
+                }
+            }
+
+            let checkbox = "";
+            let date = ""
+            let bank = "";
+            let description = "";
+            let value = "";
+            let status = "";
+            let ledge_account = "";
+
+            const fragment_icon = 
+            `
+            <svg    
+                onclick="disfragment(this.closest('li').id)" 
+                name="fragment-icon" xmlns="http://www.w3.org/2000/svg" 
+                height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--standard)" 
+                style="position: absolute; right: 0; padding-right: 10px; cursor: pointer;"
+                title="Desfragmentar">
+                <title>Desfragmentar</title>
+                <path d="M480-400 40-640l440-240 440 240-440 240Zm0 160L63-467l84-46 333 182 333-182 84 46-417 227Zm0 160L63-307l84-46 333 182 333-182 84 46L480-80Zm0-411 273-149-273-149-273 149 273 149Zm0-149Z"/>
+            </svg>
+            `;
+
+            if(t.status != "CANCELADO"){
+                checkbox = `<span style="justify-self: center;"><input type="checkbox" name="check-${t.id}" id="check-${t.id}" onclick="event.stopPropagation()"></span>`;
+                date = `<span>${formatDateTime(t.date)}</span>`;
+                bank = `<span>${bankInfo}</span>`;
+                description = `<span>${t.description}</span>`;
+                value = `<span>${formatCurrency(t.amount)}</span>`;
+                status = `<span onclick="open_transactionEdit_modal(this)">${t.status}</span>`;
+                ledge_account = `<span data-code="${t.classification.split(" - ")[0]}"> ${t.classification.split(" - ").slice(1).join(" - ")}</span>`;
+            }else{
+                checkbox = `<span style="justify-self: center;"><input type="checkbox" name="check-${t.id}" id="check-${t.id}" onclick="event.stopPropagation()"></span>`;
+                date = `<span><s>${formatDateTime(t.date)}</s></span>`;
+                bank = `<span><s>${bankInfo}</s></span>`;
+                description = `<span><s>${t.description}</s></span>`;
+                value = `<span><s>${formatCurrency(t.amount)}</s></span>`;
+                status = `<span onclick="open_transactionEdit_modal(this)">${t.status}</span>`;
+                ledge_account = `<span data-code="${t.classification.split(" - ")[0]}">${t.classification.split(" - ").slice(1).join(" - ")}</span>`;
+            }
+
+            ul_transactions.innerHTML += `
+            <li id="${t.id}">
+                ${checkbox}
+                ${date}
+                ${bank}
+                ${description}
+                ${value}
+                ${status}
+                ${ledge_account}
+                ${t.parent ? fragment_icon : ''}
+            </li>
+            `;
+        }
+
+        function include_new_account(json){
+            const chartOfAccounts = document.getElementById('chart-of-accounts');
+
+            let account_info = json || {id: '', code: '', description: ''};
+
+            const ledge_account = `<input type="text" id="" placeholder="Código" value="${account_info.code}" style="text-align: center;" oninput="mascaraNumero(this)">`;
+            const ledge_description = `<input type="text" id="" placeholder="Descrição da conta" value="${account_info.description}">`;
+            const confirm_button = `
+            <button onclick="save_ledge_account(this)">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                    <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+                </svg>
+            </button>
+            `;
+            const delete_button = `
+            <button style="background-color: #FA697A;" onclick="delete_ledge_account(this)">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFF">
+                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                </svg>
+            </button>
+            `;
+
+            const li = document.createElement('li');
+            if(json){ li.id = account_info.id }
+
+            li.innerHTML = `${ledge_account}${ledge_description}${confirm_button}${delete_button}`;
+
+            chartOfAccounts.appendChild(li);
+        }
+
+        function show_chartOfAccout_options(modal){
+
+            const status = document.getElementById(modal).querySelector('select').value;
+            if(status != "CONFIRMADO"){return}
+
+            let modalBox = modal == 'edit-single-transaction'? 0 : 1;
+
+            const box = document.getElementsByClassName('boxOfChartOfAccount')[modalBox];
+            const chartOfAccounts = JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [];
+            const filter = box.querySelector('input');
+            const ul = box.querySelector('ul');
+            ul.innerHTML = '';
+
+            box.querySelector('input').value = "";
+
+            let visibleAccounts = chartOfAccounts;
+
+            visibleAccounts.forEach(account => {
+                const li = document.createElement('li');
+                li.textContent = account.code + " - " + account.description;
+                li.onclick = () => selectedAccount(account.code + " - " + account.description);
+                ul.appendChild(li);
+            });
+
+            filter.addEventListener('input', () => {
+                visibleAccounts = chartOfAccounts.filter(account => (account.code + " - " + account.description.toUpperCase()).includes(filter.value.toUpperCase()));
+                ul.innerHTML = '';
+                
+                visibleAccounts.forEach(account => {
+                    const li = document.createElement('li');
+                    li.textContent = account.code + " - " + account.description;
+                    li.onclick = () => selectedAccount(account.code + " - " + account.description);
+                    ul.appendChild(li);
+                });
+            });
+
+            box.style.display = '';
+            box.querySelector('input').focus();
+
+            function selectedAccount(account){   
+                const ledge_select  = document.getElementsByClassName('selectInChartOfAccount')[modalBox];
+                ledge_select.value = account;
+                ledge_select.textContent = account;
+                setTimeout(() => close_chartOfAccount_options(modal), 100);
+            }
+        }
+
+        function close_chartOfAccount_options(modal){
+            let modalBox = modal == 'edit-single-transaction'? 0 : 1;
+            const box = document.getElementsByClassName('boxOfChartOfAccount')[modalBox];
+            box.style.display = 'none';
+        }
+
+        function show_transactions() {
+            return new Promise((resolve) => {
+                if (isProcessing) {
+                    clearTimeout(currentTimeout);
+                    document.getElementById('transactions-list').innerHTML = "";
+                    isProcessing = false;
+                }
+
+                document.getElementById('transactions-list').innerHTML = "";
+
+                let transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+                const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+                const bankFilter = document.getElementById('bank-selection');
+                const initialMonthFilter = document.getElementById('initial-month');
+                const finalMonthFilter = document.getElementById('final-month');
+                const yearFilter = document.getElementById('year-filter');
+                const incomesFilter = document.getElementById('only-incomes');
+                const outcomesFilter = document.getElementById('only-outcomes');
+                const onlyPendingFilter = document.getElementById('only-pending');
+                const showCanceledFilter = document.getElementById('show-canceled');
+
+                transactions = transactions.sort((a, b) => Number(a.date.slice(0, 8)) - Number(b.date.slice(0, 8)));
+
+                const savedYearFilter = sessionStorage.getItem('yearFilter') || "2025";
+                if(savedYearFilter !== yearFilter){
+                    yearFilter.value = savedYearFilter;
+                }
+
+                let cc = bankFilter.value == "0" ? "" : bankFilter.value;
+
+                let initialFilter = yearFilter.value + initialMonthFilter.value;
+                let finalFilter = yearFilter.value + finalMonthFilter.value;
+
+                isProcessing = true;
+                let batchSize = 5; // Tamanho do bloco para processar
+                let index = 0;
+                let totalFiltered = 0; // Contador de transações filtradas
+
+                const startBalance = document.getElementById('start-balance');
+                const incomes = document.getElementById('incomes');
+                const outcomes = document.getElementById('outcomes');
+
+                startBalance.value = "0,00";
+                incomes.value = "0,00";
+                outcomes.value = "0,00";
+
+                banks.forEach(bank => {
+                    if(cc == "" || cc == bank.cc){
+                        const currentValue = parseFloat(startBalance.value.replace(/\./g, "").replace(",", "."));
+                        const newAmount = parseFloat(bank.balance.replace(/\./g, "").replace(",", "."));
+                        startBalance.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentValue + newAmount);
+                    }
+                });
+
+                function processBatch() {
+                    let end = Math.min(index + batchSize, transactions.length);
+                    let batch = transactions.slice(index, end); // Pega apenas um pedaço dos dados
+
+                    let filteredBatch = batch.filter(t => (t.cc.includes(cc) || cc.includes(t.cc)) );
+                    filteredBatch = filteredBatch.filter(t => t.status != "FRAGMENTADO");
+
+                    filteredBatch.forEach(t => {
+                        if(t.period < initialFilter && t.status == "CONFIRMADO"){
+                            const currentValue = parseFloat(startBalance.value.replace(/\./g, "").replace(",", "."));
+                            const newAmount = parseFloat(t.amount.replace(",", "."));
+                            startBalance.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentValue + newAmount);
+                        }
+                    });
+
+                    filteredBatch = filteredBatch.filter(t => 
+                        initialFilter <= t.period && t.period <= finalFilter
+                    );
+
+                    filteredBatch = filteredBatch.filter(t => 
+                        (incomesFilter.checked && (t.type == "CREDIT" || !t.amount.toString().startsWith("-"))) || 
+                        (outcomesFilter.checked && (t.type == "DEBIT" || t.amount.toString().startsWith("-")))
+                    );
+
+                    if (onlyPendingFilter.checked) {
+                        filteredBatch = filteredBatch.filter(t => t.status === "PENDENTE");
+                        showCanceledFilter.checked = false;
+                    }
+
+                    if (!showCanceledFilter.checked) {
+                        filteredBatch = filteredBatch.filter(t => t.status !== "CANCELADO");
+                    }
+
+                    // Renderiza apenas o lote atual
+                    filteredBatch.forEach(t => {
+                        if (showCanceledFilter.checked || t.status !== "CANCELADO") {
+                            include_transaction(t);
+
+                            if(t.status == "CONFIRMADO" && (t.type == "CREDIT" || !t.amount.toString().startsWith("-"))){
+                                const currentValue = parseFloat(incomes.value.replace(/\./g, "").replace(",", "."));
+                                const newAmount = parseFloat(t.amount.replace(",", "."));
+                                incomes.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentValue + newAmount);
+                            }
+                            if(t.status == "CONFIRMADO" && (t.type == "DEBIT" || t.amount.toString().startsWith("-"))){
+                                const currentValue = parseFloat(outcomes.value.replace(/\./g, "").replace(",", "."));
+                                const newAmount = parseFloat(t.amount.replace(",", ".").replace("-", ""));
+                                outcomes.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentValue + newAmount);
+                            }
+
+                        }else{
+                            totalFiltered--;
+                        }
+                    });
+
+                    totalFiltered += filteredBatch.length; // Atualiza a contagem total de transações filtradas
+                    document.getElementById('transactionsLoading').style.width = `${(index / transactions.length) * 100}%`;
+
+                    index = end;
+
+                    if (index < transactions.length) {
+                        currentTimeout = setTimeout(processBatch, 1);
+                    } else {
+                        resolve(document.getElementById('numberOfTransactions').value = totalFiltered);
+                        updateFinalBalance();
+                        setTimeout(() => {document.getElementById('transactionsLoading').style.width = `0%`}, 100);
+                        isProcessing = false;
+                        update_status();
+                    }
+                }
+
+                processBatch();
+            });
+        }
+
+        function update_transction(id){ 
+            const modal = document.getElementById('edit-single-transaction');
+            const item = document.getElementById(id).querySelectorAll('span');
+            if(modal.querySelector('select').value == "CONFIRMADO" && modal.querySelector('button').value == ''){return}
+
+            const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            const hashMap = new Map(transactions.map(item => [item.id, item]));
+
+            hashMap.get(id).description = modal.querySelectorAll('input')[1].value;
+            hashMap.get(id).amount = modal.querySelectorAll('input')[2].value.replace('.', '');
+            hashMap.get(id).status = modal.querySelector('select').value;
+            if(modal.querySelector('select').value == "PENDENTE" || modal.querySelector('select').value == "CANCELADO"){
+                hashMap.get(id).classification = "";
+            }else{
+                hashMap.get(id).classification = modal.querySelector('button').value;
+            }
+
+            sessionStorage.setItem('transactions', JSON.stringify([...hashMap.values()]));
+
+            const type = hashMap.get(id).amount.startsWith("-") ? "PAYMENT" : "RECEITPT";
+            const rawValue = parseFloat(hashMap.get(id).amount.replace(",", "."));
+
+            const absValue = Math.abs(rawValue);
+            let value_range = "";
+            if (absValue < 1) value_range += "CENTAVO";
+            else if (absValue < 100) value_range = "DEZENA";
+            else if (absValue < 1000) value_range = "CENTENA";
+            else if (absValue < 10_000) value_range = "MILHAR";
+            else if (absValue < 100_000) value_range = "DEZENA_MILHAR";
+            else if (absValue < 1_000_000) value_range = "CENTENA_MILHAR";
+            else if (absValue < 10_000_000) value_range = "MILHAO";
+            else value_range = "DEZENA_MILHAO";
+
+            const day = parseInt(hashMap.get(id).date.slice(6, 8));
+            let date_rage = "";
+            if (day < 10) date_rage = "INICIO_MES";
+            else if (day < 20) date_rage = "MEIO_MES";
+            else date_rage = "FIM_MES";
+
+            if(modal.querySelector('select').value == "CONFIRMADO"){
+                MachineLearning.train(`${type} ${date_rage} ${hashMap.get(id).description} ${value_range}`, hashMap.get(id).classification);
+                sessionStorage.setItem('machine_learning', MachineLearning.toJSON());
+            }
+
+            if(item[5].textContent == "CONFIRMADO"){
+                MachineLearning.penalize(`${type} ${date_rage} ${hashMap.get(id).description} ${value_range}`, `${item[6].getAttribute('data-code')} - ${item[6].textContent}`);
+                sessionStorage.setItem('machine_learning', MachineLearning.toJSON());
+            }
+
+            if(modal.querySelector('select').value != "CANCELADO"){
+
+                if(item[5].textContent == "CANCELADO"){
+                    item[1].textContent = item[1].querySelector('s').textContent;
+                    item[2].textContent = item[2].querySelector('s').textContent;
+                }
+                item[3].textContent = modal.querySelectorAll('input')[1].value;
+                item[4].textContent = modal.querySelectorAll('input')[2].value;
+                item[5].textContent = modal.querySelector('select').value;
+                if(modal.querySelector('select').value == "PENDENTE" || modal.querySelector('select').value == "CANCELADO"){
+                    item[6].textContent = "";
+                    item[6].setAttribute('data-code', "");
+                }else{
+                    item[6].setAttribute('data-code', modal.querySelector('button').value.split(" - ")[0]);
+                    item[6].textContent = modal.querySelector('button').value.split(" - ").slice(1).join(" - ");
+                }
+            }
+
+            if(document.getElementById('only-pending').checked && modal.querySelector('select').value != "PENDENTE"){
+                item[0].closest('li').remove();
+            }
+
+            if((item[6].textContent == "PENDENTE" || item[6].textContent == "CANCELADO") && modal.querySelector('select').value == "CONFIRMADO"){
+                updateIncomesAndOutcomes(hashMap.get(id).type, hashMap.get(id).amount, "SUM");
+            }else if(item[6].textContent == "CONFIRMADO" && modal.querySelector('select').value == "PENDENTE"){
+                updateIncomesAndOutcomes(hashMap.get(id).type, hashMap.get(id).amount, "SUB");
+            }
+
+            modal.close();
+
+            showNotification('done');
+            hideNotification(1000);
+
+            updateFinalBalance()
+            update_status();
+
+            if(modal.querySelector('select').value == "CANCELADO"){
+                item[0].closest('li').remove();
+            }
+        }
+
+        function updateIncomesAndOutcomes(type, amount, operation){
+
+            const incomes = document.getElementById('incomes');
+            const outcomes = document.getElementById('outcomes');
+
+            const newAmount = parseFloat(amount.replace(",", ".").replace("-", ""));
+
+            if(type == "CREDIT" || !amount.toString().startsWith("-")){
+                const currentValue = parseFloat(incomes.value.replace(/\./g, "").replace(",", "."));
+                const newValue = operation == "SUM" ? currentValue + newAmount : currentValue - newAmount;
+                incomes.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(newValue);
+            }
+            if(type == "DEBIT" || amount.toString().startsWith("-")){
+                const currentValue = parseFloat(outcomes.value.replace(/\./g, "").replace(",", "."));
+                const newValue = operation == "SUM" ? currentValue + newAmount : currentValue - newAmount;
+                outcomes.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(newValue);
+            }
+        }
+
+        function updateFinalBalance(){
+            const startBalance = document.getElementById('start-balance');
+            const incomes = document.getElementById('incomes');
+            const outcomes = document.getElementById('outcomes');
+            const endBalance = document.getElementById('end-balance');
+
+            const startBalanceFloat = parseFloat(startBalance.value.replace(/\./g, "").replace(",", "."));
+            const incomesFloat = parseFloat(incomes.value.replace(/\./g, "").replace(",", "."));
+            const outcomesFloat = parseFloat(outcomes.value.replace(/\./g, "").replace(",", "."));
+            endBalance.value = new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(startBalanceFloat + incomesFloat - outcomesFloat);
+        }
+
+        function update_status() {
+            const statusList = Array.from(document.querySelectorAll('[data-month-status]'));
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+            const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            const [day, month, year] = new Date().toLocaleDateString().split('/');
+            const filterYear = document.getElementById('year-filter').value;
+            let foundOfx = {};
+
+            for (let i = 1; i <= 12; i++) {
+                const key = filterYear + (i < 10 ? '0' + i : i);
+                foundOfx[key] = {has: 0, shouldHave: 0};
+            }
+
+            banks.forEach(bank => {
+                Object.keys(foundOfx).forEach(key => {
+                    if (key >= bank.date.split('/').reverse().join('') && key < (year + month)) {
+                        foundOfx[key].shouldHave++;
+                    }
+                });
+            
+                for (let i = (bank.ofxImported.length - 1); i >= 0; i--) {
+                    if(bank.ofxImported[i] < parseInt(`${filterYear}01`) || bank.ofxImported[i] > parseInt(`${filterYear}12`) ) { continue }
+                    foundOfx[bank.ofxImported[i]].has++;
+                }
+            });
+
+            for(let i = 0; i < statusList.length; i++){
+                const period = filterYear + statusList[i].getAttribute('data-month-status');
+
+                if(foundOfx[period].shouldHave == 0){ 
+                    removeAllStatusClasses()
+                    continue 
+                }
+
+                if(foundOfx[period].has == 0){ 
+                    removeAllStatusClasses()
+                    statusList[i].classList.add('redStatus') 
+                }
+
+                if(foundOfx[period].has != foundOfx[period].shouldHave && foundOfx[period].has != 0){ 
+                    removeAllStatusClasses()
+                    statusList[i].classList.add('yellowStatus') 
+                }
+
+                if(foundOfx[period].has == foundOfx[period].shouldHave){
+                    removeAllStatusClasses()
+                    const hasPending = transactions.some(t => t.status === "PENDENTE" && t.period == period);
+                    statusList[i].classList.add(hasPending ? 'yellowStatus' : 'greenStatus');
+                }
+
+                function removeAllStatusClasses(){
+                    statusList[i].classList.remove('redStatus');
+                    statusList[i].classList.remove('yellowStatus');
+                    statusList[i].classList.remove('greenStatus');
+                }
+            }
+        }
+
+        function dinamicFilter(){
+            const searchFilter = document.getElementById('search-transactions');
+            const list = document.getElementById('transactions-list');
+            const transactions = list.querySelectorAll('li');
+
+            if(searchFilter.value == "=:TREINAR_ML"){
+                for (let t of transactions) {
+                    t.style.display = '';
+                }
+
+                trainML();
+                return;
+            }
+
+            if(searchFilter.value.startsWith("=:ML>>>")){
+                let query = searchFilter.value.split("=:ML>>>")[1].trim(); // Pegando o termo após "=:ML>>>"
+    
+                for (let t of transactions) {
+                    t.style.display = '';
+                }
+
+                showNotification("O ML Classificou como >>> " + MachineLearning.classify(query));
+                hideNotification(1500);
+                return;
+            }
+
+            for(let i = 0; i < transactions.length; i++){
+                const t = transactions[i];
+                const transactionString = `${t.querySelectorAll('span')[1].textContent} ${t.querySelectorAll('span')[3].textContent} ${t.querySelectorAll('span')[4].textContent} ${t.querySelectorAll('span')[5].textContent} ${t.querySelectorAll('span')[6].textContent}`;
+                if(transactionString.toUpperCase().includes(searchFilter.value.toUpperCase())){
+                    t.style.display = '';
+                }else{
+                    t.style.display = 'none';
+                }
+            }
+        }
+
+        function checkAllTrasactions(){
+            const checkAllTransactions = document.getElementById('checkAll-transactions');
+            const transactionList = document.getElementById('transactions-list').querySelectorAll('li') || [];
+
+            transactionList.forEach(transaction => {
+                if (transaction.style.display === '') {
+                    const checkbox = transaction.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = checkAllTransactions.checked;
+                    }
+                }
+            });
+        }
+
+        function showNotification(command){
+            const notification = document.getElementById("notification-modal");
+
+            notification.innerHTML = "";
+
+            if(command == 'processing'){
+                const loader = `<div class="loader"></div>`;
+                const message = `<p style="padding-left: 5px">Processando...</p>`;
+                notification.innerHTML = `${loader}${message}`;
+            }else
+            if(command == 'done'){
+                const done = `<div class="done-check"></div>`;
+                const message = `<p style="padding-left: 15px">Concluído!</p>`;
+                notification.innerHTML = `${done}${message}`;
+            }else{
+                const message = `<p style="padding: 5px">${command}</p>`;
+                notification.innerHTML =  message;
+            }
+
+            if(!isNotificationActive){
+                notification.style.animation = "get_in 0.5s ease-out forwards";
+            }
+
+            isNotificationActive = true;
+        }
+
+        function hideNotification(time){
+            const loadingModal = document.getElementById("notification-modal");
+            setTimeout(() => {
+                loadingModal.style.animation = "get_out 0.5s ease-out forwards";
+                isNotificationActive = false;
+            }, time)
+        }
+
+        function update_multipleTransactions() {
+            const modal = document.getElementById('edit-multiple-transactions');
+            if (modal.querySelector('select').value == "CONFIRMADO" && modal.querySelector('button').value == '') { return; }
+
+            showNotification('processing');
+
+            const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            let transactionList = document.getElementById('transactions-list').querySelectorAll('li') || [];
+            const hashMap = new Map(transactions.map(item => [item.id, item]));
+
+            transactionList = Array.from(transactionList).filter(t => t.querySelector('input[type="checkbox"]').checked == true);
+            
+            let batchSize = 5; // Processar 10 transações por lote
+            let index = 0;
+            let totalTransactions = transactionList.length;
+
+            function processBatch() {
+                let end = Math.min(index + batchSize, totalTransactions);
+                
+                for (let i = index; i < end; i++) {
+                    let transaction = transactionList[i];
+
+                    const item = document.getElementById(transaction.id).querySelectorAll('span');
+
+                    const type = hashMap.get(transaction.id).amount.startsWith("-") ? "PAYMENT" : "RECEITPT";
+                    const rawValue = parseFloat(hashMap.get(transaction.id).amount.replace(",", "."));
+
+                    const absValue = Math.abs(rawValue);
+                    let value_range = "";
+                    if (absValue < 1) value_range += "CENTAVO";
+                    else if (absValue < 100) value_range = "DEZENA";
+                    else if (absValue < 1000) value_range = "CENTENA";
+                    else if (absValue < 10_000) value_range = "MILHAR";
+                    else if (absValue < 100_000) value_range = "DEZENA_MILHAR";
+                    else if (absValue < 1_000_000) value_range = "CENTENA_MILHAR";
+                    else if (absValue < 10_000_000) value_range = "MILHAO";
+                    else value_range = "DEZENA_MILHAO";
+
+                    const day = parseInt(hashMap.get(transaction.id).date.slice(6, 8));
+                    let date_rage = "";
+                    if (day < 10) date_rage = "INICIO_MES";
+                    else if (day < 20) date_rage = "MEIO_MES";
+                    else date_rage = "FIM_MES";
+
+                    if(modal.querySelector('select').value == "CONFIRMADO"){
+                        MachineLearning.train(`${type} ${date_rage} ${hashMap.get(transaction.id).description} ${value_range}`, modal.querySelector('button').value);
+                    }
+
+                    if(item[5].textContent == "CONFIRMADO" || modal.querySelector('select').value != "CONFIRMADO"){
+                        MachineLearning.penalize(`${type} ${date_rage} ${hashMap.get(transaction.id).description} ${value_range}`, `${item[6].getAttribute('data-code')} - ${item[6].textContent}`);
+                    }
+
+                    if (hashMap.has(transaction.id) && modal.querySelector('select').value != "CANCELADO") {
+                        let transactionData = hashMap.get(transaction.id);
+                        transactionData.status = modal.querySelector('select').value;
+
+                        if(item[5].textContent == "CANCELADO"){
+                            item[1].textContent = item[1].querySelector('s').textContent;
+                            item[2].textContent = item[2].querySelector('s').textContent;
+                            item[3].textContent = item[3].querySelector('s').textContent;
+                            item[4].textContent = item[4].querySelector('s').textContent;
+                        }
+                        
+                        if (modal.querySelector('select').value == "PENDENTE") {
+                            transactionData.classification = "";
+                        } else {
+                            transactionData.classification = modal.querySelector('button').value;
+                        }
+
+                        if(document.getElementById('only-pending').checked && modal.querySelector('select').value != "PENDENTE"){
+                            item[0].closest('li').remove();
+                        }
+
+                        item[0].querySelector('input').checked = false;
+                        item[5].textContent = modal.querySelector('select').value;
+                        
+                        if (modal.querySelector('select').value == "PENDENTE" || modal.querySelector('select').value == "CANCELADO") {
+                            item[6].textContent = "";
+                            item[6].setAttribute('data-code', "");
+                        } else {
+                            item[6].textContent = modal.querySelector('button').value.split(" - ").slice(1).join(" - ");
+                            item[6].setAttribute('data-code', modal.querySelector('button').value.split(" - ")[0]);
+                        }
+
+                        if((item[6].textContent == "PENDENTE" || item[6].textContent == "CANCELADO") && modal.querySelector('select').value == "CONFIRMADO"){
+                            updateIncomesAndOutcomes(hashMap.get(id).type, hashMap.get(id).amount, "SUM");
+                        }else if(item[6].textContent == "CONFIRMADO" && modal.querySelector('select').value == "PENDENTE"){
+                            updateIncomesAndOutcomes(hashMap.get(id).type, hashMap.get(id).amount, "SUB");
+                        }
+                    }
+
+                    if(hashMap.has(transaction.id) && modal.querySelector('select').value == "CANCELADO"){
+                        let transactionData = hashMap.get(transaction.id);
+                        transactionData.status = modal.querySelector('select').value;
+                        transactionData.classification = "";
+
+                        item[0].closest('li').remove();
+                    }
+                }
+
+                index = end;
+                
+                if (index < totalTransactions) {
+                    setTimeout(processBatch, 0); // Libera a thread principal antes de continuar
+                } else {
+                    sessionStorage.setItem('transactions', JSON.stringify([...hashMap.values()]));
+                    document.getElementById('edit-multiple-transactions').close();
+                    document.getElementById('checkAll-transactions').checked = false;
+                    updateFinalBalance();
+                    update_status();
+
+                    showNotification('done');
+                    hideNotification(2000);
+
+                    sessionStorage.setItem('machine_learning', MachineLearning.toJSON());
+                }
+            }
+
+            processBatch();
+        }
+
+        function open_automatic_classification(){
+            const modal = document.getElementById('automatic-classification');
+            const associateDescriptionToAccount = JSON.parse(sessionStorage.getItem('associateDescriptionToAccount')) || [];
+            const chartOfAccounts = JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [];
+            const ul = modal.querySelector('ul');
+            const select = modal.querySelectorAll('select')[1];
+
+            select.innerHTML = "";
+
+            const opt = document.createElement('option');
+            opt.value = "";
+            opt.textContent = "Selecione uma conta";
+            select.appendChild(opt);
+
+            chartOfAccounts.forEach(account => {
+                const opt = document.createElement('option');
+
+                opt.value = account.code + " - " + account.description;
+                opt.textContent = account.code + " - " + account.description;
+
+                select.appendChild(opt);
+            });
+
+            ul.innerHTML = "";
+
+            associateDescriptionToAccount.forEach(account => {
+                include_new_associate_description(account);
+            })
+
+            modal.showModal();
+        }
+
+        function associate_description(){
+            const modal = document.getElementById('automatic-classification');
+            if(modal.querySelector('input').value == "" || modal.querySelectorAll('select')[1].value == ""){return}
+
+            const associateDescriptionToAccount = JSON.parse(sessionStorage.getItem('associateDescriptionToAccount')) || [];
+            const ul = modal.querySelector('ul');
+
+            const newLinkDescription = {
+                id: generateShortUUID(),
+                description: modal.querySelector('input').value.trim(),
+                account: modal.querySelectorAll('select')[1].value.trim()
+            }
+
+            associateDescriptionToAccount.push(newLinkDescription);
+
+            sessionStorage.setItem('associateDescriptionToAccount', JSON.stringify(associateDescriptionToAccount));
+
+            include_new_associate_description(newLinkDescription);
+
+            modal.querySelector('input').value = "";
+            modal.querySelectorAll('select')[1].value = "";
+
+            function generateShortUUID() {
+                return Math.random().toString(36).substr(2, 15).toUpperCase();
+            }
+        }
+
+        function include_new_associate_description(json){
+            const modal = document.getElementById('automatic-classification');
+            const ul = modal.querySelector('ul');
+
+            const li = 
+            `
+            <li id="${json.id}">
+                <legend style="text-align: start; width: 40%;">${json.description}</legend>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000"><path d="m700-300-57-56 84-84H120v-80h607l-83-84 57-56 179 180-180 180Z"/></svg>
+                <legend style="text-align: start; width: 40%;">${json.account}</legend>
+                <button style="background-color: #FFF;" onclick="delete_association(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E">
+                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                    </svg>
+                </button>
+            </li>
+            `;
+
+            ul.innerHTML += li;
+        }
+
+        function delete_association(html){
+            let associateDescriptionToAccount = JSON.parse(sessionStorage.getItem('associateDescriptionToAccount')) || [];
+            associateDescriptionToAccount = associateDescriptionToAccount.filter(association => html.closest('li').id != association.id);
+            sessionStorage.setItem('associateDescriptionToAccount', JSON.stringify(associateDescriptionToAccount));
+            html.closest('li').remove();
+        }
+
+        function execute_automatic_association(command) {
+            const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            const associateDescriptionToAccount = JSON.parse(sessionStorage.getItem('associateDescriptionToAccount')) || [];
+
+            showNotification('processing');
+
+            let period = "";
+            if (command == 'manual') {
+                period = document.getElementById('year-filter').value + document.getElementById('execution-month').value;
+            }
+            if (command == 'automatic') {
+                period = document.getElementById('ofx-year').value + document.getElementById('ofx-month').value;
+            }
+
+            let batchSize = 1;
+            let index = 0;
+            let totalTransactions = transactions.length;
+
+            function processBatch() {
+                let end = Math.min(index + batchSize, totalTransactions);
+
+                for (let i = index; i < end; i++) {
+                    if (transactions[i].status === "PENDENTE" && transactions[i].period == period) {
+                        for (let j = 0; j < associateDescriptionToAccount.length; j++) {
+                            if (transactions[i].description.toUpperCase().includes(associateDescriptionToAccount[j].description.toUpperCase())) {
+                                transactions[i].status = "CONFIRMADO";
+                                transactions[i].classification = associateDescriptionToAccount[j].account;
+                                break;
+                            }
+                        }
+
+                        if(MachineLearning.classify(`${transactions[i].date} ${transactions[i].description} ${transactions[i].amount}`) && transactions[i].status == "PENDENTE"){
+                            transactions[i].status = "CONFIRMADO";
+                            transactions[i].classification = MachineLearning.classify(`${transactions[i].date} ${transactions[i].description} ${transactions[i].amount}`);
+                        }
+                    }
+                }
+
+                index = end;
+
+                if (index < totalTransactions) {
+                    setTimeout(processBatch, 0);
+                } else {
+                    sessionStorage.setItem('transactions', JSON.stringify(transactions));
+                    showNotification('done');
+                    hideNotification(1000);
+                    show_transactions();
+                    update_status();
+                }
+            }
+
+            processBatch();
+        }
+
+        function exportJSON() {
+
+            const data = {
+                "header_info": JSON.parse(sessionStorage.getItem('header_info')) || [],
+                "banks": JSON.parse(sessionStorage.getItem('banks')) || [],
+                "chart_of_accounts": JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [],
+                "transactions": JSON.parse(sessionStorage.getItem('transactions')) || [],
+                "associateDescriptionToAccount": JSON.parse(sessionStorage.getItem('associateDescriptionToAccount')) || [],
+                "machine_learning": JSON.parse(MachineLearning.toJSON()) || []
+            }
+
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const link = document.createElement("a");
+
+            link.href = URL.createObjectURL(blob);
+            link.download = "Conciliacao Bancaria - " + data.header_info.razao;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function importJSON(){
+            const input = document.getElementById('json-input');
+
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+                    try {
+                        const jsonData = JSON.parse(event.target.result);
+                        
+                        sessionStorage.setItem('header_info', JSON.stringify(jsonData.header_info || []));
+                        sessionStorage.setItem('banks', JSON.stringify(jsonData.banks  || []));
+                        sessionStorage.setItem('chart_of_accounts', JSON.stringify(jsonData.chart_of_accounts  || []));
+                        sessionStorage.setItem('transactions', JSON.stringify(jsonData.transactions  || []));
+                        sessionStorage.setItem('associateDescriptionToAccount', JSON.stringify(jsonData.associateDescriptionToAccount  || []));
+                        sessionStorage.setItem('machine_learning', JSON.stringify(jsonData.machine_learning || []));
+
+                        location.reload();
+                    } catch (error) {
+                        console.error("Erro ao ler o JSON:", error);
+                    }
+                };
+
+                reader.readAsText(file);
+            });
+            
+            input.click();
+        }
+
+        function import_chartOfAccountCSV() {
+            const input = document.getElementById('csv-input');
+            const chartOfAccounts = JSON.parse(sessionStorage.getItem('chart_of_accounts')) || [];
+
+            let batchSize = 1;
+            let index = 0;
+
+            function processBatch(data, batchSize) {
+                let end = Math.min(index + batchSize, data.length);
+
+                for (let i = index; i < end; i++) {
+                    showNotification(`Importando Plano de Contas... ${Math.round((index / data.length) * 100)}%`);
+                    if(data[i][0] != "" && data[i][1] != "" && data[i][0].toUpperCase() != "CLASSIFICAÇÃO" && data[i][0].toUpperCase() != "CONTA"){
+
+                        const json = {
+                            id: generateShortUUID(),
+                            code: data[i][1].replace('-', ''),
+                            description: data[i][2]
+                        }
+
+                        include_new_account(json);
+                        chartOfAccounts.push(json);
+                    }
+                }
+
+                index = end;
+
+                if (index < data.length) {
+                    setTimeout(() => processBatch(data, batchSize), 0);
+                } else {
+                    sessionStorage.setItem('chart_of_accounts', JSON.stringify(chartOfAccounts));
+                    showNotification('done')
+                    hideNotification(1000)
+                }
+            }
+
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const rows = text.split("\n").map(row => row.split(";"));
+
+                    processBatch(rows, batchSize); // ✅ Agora está chamando corretamente
+                };
+
+                reader.readAsText(file);
+            });
+
+            input.click();
+        }
+
+        function formatCurrency(value) {
+            // Substitui vírgula por ponto para garantir que seja tratado como número
+            let number = parseFloat(value.replace(',', '.'));
+            
+            if (isNaN(number)) {
+                throw new Error("Valor inválido");
+            }
+            
+            // Converte para o formato desejado
+            return number.toLocaleString('de-DE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function open_exportToCSV_modal(){
+            const modal = document.getElementById('csvExport');
+
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+            const select = document.getElementById('csv-bank');
+
+            select.innerHTML = ""
+
+            banks.forEach(bank => {
+                select.innerHTML += `<option value="${bank.cc}">${bank.name} - cc: ${bank.cc}</option>`;
+            });
+
+            modal.showModal();
+        }
+
+        function exportToCSV() {
+
+            const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+            const csvBank = document.getElementById('csv-bank').value;
+            const yearFilter = document.getElementById('year-filter').value;
+            const csvMonth = document.getElementById('csv-month').value;
+            let bankAccount = "";
+
+            const csv = [
+                ["DATA", "CONTA_DEBITO", "CONTA_CREDITO", "VALOR", "COD. HISTORICO", "COMPLEMENTO"]
+            ];
+
+            for(let i = 0; i < banks.length; i++){
+                if(banks[i].cc.includes(csvBank)){
+                    bankAccount = banks[i].jounal_account;
+                }
+            }
+
+            for(let i = 0; i < transactions.length; i++){
+                const t = transactions[i];
+
+                if(t.cc.includes(csvBank) && t.period == `${yearFilter}${csvMonth}` && t.status != "CANCELADO"){
+                    if(t.status == "PENDENTE"){return}
+
+                    if(t.status == "FRAGMENTADO") continue;
+
+                    const date = formatDateTime(t.date);
+                    const debit = t.amount.slice(0, 1) == "-" ? t.classification.split(" - ")[0]: bankAccount;
+                    const credit = debit == bankAccount ? t.classification.split(" - ")[0]: bankAccount;
+                    const value = t.amount.slice(0, 1) == "-" ? formatCurrency(t.amount.replace("-", "")): formatCurrency(t.amount);
+                    const complement = t.description;
+
+                    csv.push([date, debit, credit, value, "", complement]);
+                }
+            }
+
+            const BOM = "\uFEFF";
+            const csvContent = BOM + csv.map(row => row.join(";")).join("\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+
+            if (navigator.msSaveBlob) { 
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                link.href = URL.createObjectURL(blob);
+                link.download = "csv";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function import_ofx(){
+            const file = document.getElementById('ofx-input').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const decoder = new TextDecoder('ISO-8859-1');
+                const ofxContent = decoder.decode(e.target.result);
+                parseOFX(ofxContent);
+            };
+            reader.readAsArrayBuffer(file);
+
+            document.getElementById('ofx-input').value = '';
+
+            document.getElementById('importofx-modal').close();
+
+            function parseOFX(ofxText) {
+                const fixedXML = fixOFXFormat(ofxText);
+                if (!fixedXML) {
+                    showNotification("[ERRO] Arquivo inválido");
+                    hideNotification(3000);
+                    return null;
+                }
+            
+                //console.log("🔎 XML Ajustado:\n", fixedXML); // Verificar XML corrigido
+            
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(fixedXML, "text/xml");
+            
+                // Verificar erro no parsing
+                if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+                    showNotification("[ERRO] Não foi possível realizar a leitura do OFX");
+                    hideNotification(3000);
+                    return null;
+                }
+            
+                const bankInfo = {
+                    bankID: xmlDoc.getElementsByTagName("BANKID")[0]?.textContent.trim() || "",
+                    bankName: xmlDoc.getElementsByTagName("ORG")[0]?.textContent.trim() || "",
+                    agency: xmlDoc.getElementsByTagName("BRANCHID")[0]?.textContent.trim() || "",
+                    accountNumber: xmlDoc.getElementsByTagName("ACCTID")[0]?.textContent.trim().replace("-", "") || "",
+                    accountType: xmlDoc.getElementsByTagName("ACCTTYPE")[0]?.textContent.trim() || "",
+                    startDate: xmlDoc.getElementsByTagName("DTSTART")[0]?.textContent.trim() || "",
+                    endDate: xmlDoc.getElementsByTagName("DTEND")[0]?.textContent.trim() || "",
+                    finalBalance: xmlDoc.getElementsByTagName("BALAMT")[0]?.textContent.trim() || "",
+                    statementDate: xmlDoc.getElementsByTagName("DTASOF")[0]?.textContent.trim() || "",
+                };
+            
+                const selected_bank = document.getElementById('ofx-bank').value;
+                let banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+                const bank = banks.filter(bank => (bank.cc.includes(bankInfo.accountNumber) || bankInfo.accountNumber.includes(bank.cc)))[0] || null;
+                const selected_period = parseInt(document.getElementById('ofx-year').value + document.getElementById('ofx-month').value);
+
+                let nextPeriodTobeImported = parseInt(bank.lastPeriodImported) + 1;
+                
+                if (nextPeriodTobeImported.toString().slice(4, 6) == "13") {
+                    let year = parseInt(nextPeriodTobeImported.toString().slice(0, 4)) + 1;
+                    nextPeriodTobeImported = parseInt(`${year}01`);
+                }
+
+                if(!bankInfo.accountNumber.toString().includes(selected_bank.toString())){
+                    showNotification(`[ERRO] C.C. selecionada: ${selected_bank} - C.C. no OFX: ${bankInfo.accountNumber.toString()}`);
+                    hideNotification(5000);
+                    return;
+                }
+
+                // if(selected_period < parseInt(bank.date.split('/').reverse().join("")) || nextPeriodTobeImported != selected_period){
+                //     showNotification(`[ERRO] Periodo fora da sequência: [Era esperado: ${nextPeriodTobeImported}] - [Foi encontrado: ${selected_period}]`);
+                //     hideNotification(3000);
+                //     return
+                // }
+            
+                // Buscar transações
+                let transactionNodes = xmlDoc.getElementsByTagName("STMTTRN");
+                if (transactionNodes.length === 0) {
+                    transactionNodes = xmlDoc.getElementsByTagName("CCSTMTTRN");
+                }
+            
+                const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            
+                banks = banks.map(bank => {
+                    if(bank.cc.includes(bankInfo.accountNumber) || bankInfo.accountNumber.includes(bank.cc)){
+                        return {
+                            ...bank,
+                            ofxImported: [...new Set([...bank.ofxImported, selected_period])],
+                            lastPeriodImported: selected_period
+                        }
+                    }
+                    return bank;
+                });
+            
+                sessionStorage.setItem('banks', JSON.stringify(banks));
+
+                let newTransactions = [];
+            
+                for (let i = 0; i < transactionNodes.length; i++) {
+                    const node = transactionNodes[i];
+            
+                    if(!node.getElementsByTagName("DTPOSTED")[0]?.textContent.trim().includes(selected_period)){
+                        break;
+                    }
+            
+                    newTransactions.push({
+                        id: generateShortUUID(),
+                        period: selected_period,
+                        bankID: bankInfo.bankID,
+                        cc: bankInfo.accountNumber,
+                        date: node.getElementsByTagName("DTPOSTED")[0]?.textContent.trim() || "",
+                        amount: node.getElementsByTagName("TRNAMT")[0]?.textContent.trim().replace(",", ".") || "",
+                        type: node.getElementsByTagName("TRNTYPE")[0]?.textContent.trim() || "",
+                        description: node.getElementsByTagName("NAME")[0]?.textContent.replace(/\s+/g, " ").trim() || "" + node.getElementsByTagName("MEMO")[0]?.textContent.replace(/\s+/g, " ").trim() || "",
+                        status: "PENDENTE",
+                        classification: ""
+                    });
+                }
+
+                transactions.push(...newTransactions);
+                let ordedTransaction = transactions.sort((a, b) => Number(a.date.slice(0, 8)) - Number(b.date.slice(0, 8)));
+                sessionStorage.setItem("transactions", JSON.stringify(ordedTransaction));
+            
+                execute_automatic_association('automatic');
+            
+                function fixOFXFormat(ofxText) {
+                    // Remover cabeçalhos antes do <OFX>
+                    const cleanText = removeHeaders(ofxText);
+                    if (!cleanText) return null;
+                
+                    return cleanText
+                        // Remover espaços extras entre tags
+                        .replace(/>\s+</g, '><')
+                        // Fechar tags abertas sem fechamento
+                        .replace(/<(\w+?)>([^<\n]+)/g, "<$1>$2</$1>")
+                        // Remover fechamentos duplicados (ex: </TAG></TAG>)
+                        .replace(/<\/(\w+?)><\/\1>/g, "</$1>")
+                        // Substituir quebras de linha extras dentro de tags vazias
+                        .replace(/<(\w+?)>\s*<\/\1>/g, "<$1/>")
+                        // Corrigir caracteres especiais (& para &amp;)
+                        .replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, "&amp;");
+                }
+                
+                function removeHeaders(ofxText) {
+                    // Separar a parte XML do arquivo
+                    const parts = ofxText.split(/<OFX>/i); // Case insensitive
+                    if (parts.length < 2) {
+                        console.error("OFX inválido: não encontrou <OFX>");
+                        return null;
+                    }
+                    return "<OFX>" + parts[1]; // Retorna apenas o XML
+                }
+            }
+        }
+
+        function formatDateTime(dateString) {
+            const year = dateString.slice(0, 4);
+            const month = dateString.slice(4, 6);
+            const day = dateString.slice(6, 8);
+            
+            return `${day}/${month}/${year}`;
+        }
+
+        function generateShortUUID() {
+            return Math.random().toString(36).substr(2, 15).toUpperCase();
+        }
+
+        function mascaraCNPJ(input) {
+            let valor = input.value.replace(/\D/g, "");
+
+            if (valor.length > 14) {
+                valor = valor.slice(0, 14);
+            }
+
+            valor = valor.replace(/^(\d{2})(\d)/, "$1.$2");
+            valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            valor = valor.replace(/(\d{4})(\d)/, "$1-$2");
+
+            input.value = valor;
+        }
+
+        function mascaraMoeda(input) {
+            let valor = input.value;
+
+            valor = valor.replace(/[^0-9,-]/g, "");
+
+            if (valor.includes("-")) {
+                valor = "-" + valor.replace(/-/g, "");
+            }
+
+            let partes = valor.split(",");
+            if (partes.length > 2) {
+                valor = partes[0] + "," + partes.slice(1).join("");
+            }
+
+            valor = valor.replace(/^(-?)0+(?![,0-9])/g, "$1");
+
+            let numero = valor.replace(",", ".");
+            if (!isNaN(numero) && numero !== "") {
+                let formatado = parseFloat(numero).toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                });
+
+                let cursorPos = input.selectionStart;
+                input.value = formatado;
+                input.setSelectionRange(cursorPos, cursorPos);
+            } else {
+                input.value = valor;
+            }
+        }
+
+        function mascaraNumero(input){
+            input.value = input.value.replace(/[^0-9.,-]/g, "");
+        }
+
+        function mask(value, mask) {
+            const isNegative = value.includes('-');
+            let onlynumbers= value.replace(/\D/g, '');
+
+            if (!onlynumbers || isNaN(Number(onlynumbers))) {
+            return "";
+            }
+
+            onlynumbers = Number.parseInt(onlynumbers).toString();
+            let valueLength = onlynumbers.length;
+            let maskedValue = "";
+
+            for(let i = mask.length; i > 0; i--){
+                if(mask[i - 1] === "#" && valueLength === 0){
+                break;
+                }else if(mask[i - 1] === "#" && valueLength != 0){
+                maskedValue = onlynumbers[--valueLength] + maskedValue;
+                }else if(mask[i - 1] === "0" && valueLength != 0){
+                maskedValue = onlynumbers[--valueLength] + maskedValue;
+                }else{
+                maskedValue = mask[i - 1] + maskedValue;
+                }
+            }
+
+            if(isNaN(Number.parseInt(maskedValue[0]))){maskedValue = maskedValue.substring(1)}
+
+            if (isNegative) {
+                maskedValue = "-" + maskedValue;
+            }
+
+            return maskedValue;
+        }
+    </script>
+</body>
+</html>
