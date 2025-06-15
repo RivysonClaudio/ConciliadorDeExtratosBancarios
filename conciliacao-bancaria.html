@@ -396,7 +396,7 @@
 
         #importofx-modal > div{
             display: grid;
-            width: 500px;
+            width: 750px;
             grid-template-columns: 0.5fr 0.5fr;
             row-gap: 15px;
         }
@@ -430,6 +430,36 @@
             border-radius: 5px;
             color: white;
             cursor: pointer;
+        }
+        #importofx-modal table{
+            border: 1px solid var(--stadard);
+            border-radius: 3px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        #importofx-modal table thead{
+            background-color: var(--stadard);
+            color: white;
+        }
+        #importofx-modal table th:nth-child(1),
+        #importofx-modal table th:nth-child(2),
+        #importofx-modal table th:nth-child(4){
+            width: 10ch;
+        }
+        #importofx-modal table th:nth-child(3){
+            width: 30ch;
+        }
+        #importofx-modal table th:nth-child(5){
+            width: 5ch;
+        }
+        #importofx-modal table td:nth-child(5) svg{
+            cursor: pointer;
+        }
+        #importofx-modal table tbody tr:nth-child(even){
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        #importofx-modal table th, #importofx-modal table td{
+            padding: 3.5px;
         }
 
         #chartOfAccounts-modal > div{
@@ -656,9 +686,6 @@
         #automatic-classification > div > ul li button{
             border-radius: 3px;
             cursor: pointer;
-        }
-        #automatic-classification > div > div{
-            width: 100%;
         }
         #automatic-classification > div label{
             padding: 5px;
@@ -1018,6 +1045,22 @@
             </span>
             <button onclick="document.getElementById('ofx-input').click()">Selecione um arquivo</button>
             <h6 style="grid-column: span 2; text-align: center; color: gray; margin-bottom: 10px;">Nenhum arquivo selecionado</h6>
+            <h6 style="text-align: end; align-self: center; padding-right: 5px; font-size: 0.8em; font-weight: 100;">SALDO FINAL:</h6>
+            <input id="ofx-given-balance" type="text" value="0,00" style="outline: none; padding-left: 5px;">
+            <table style="grid-column: span 2; text-align: center;">
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th>Data</th>
+                        <th>Arquivo</th>
+                        <th>Saldo Final</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
             <button onclick="document.getElementById('importofx-modal').close()">Cancelar</button>
             <button onclick="import_ofx()">Confirmar</button>
         </div>
@@ -1194,30 +1237,16 @@
             <hr>
             <ul id="listOfClassificationSaved"></ul>
             <hr>
-            <div>
-                <span style="display: flex; align-items: end;">
-                    <label style="width: 20ch">
-                        <legend>Quando o histórico</legend>
-                        <select id="whereShouldLook">
-                            <option value="ifStartsWith">Começa com</option>
-                            <option value="ifIncludes" selected>Contém</option>
-                            <option value="ifEndsWith">Termina com</option>
-                        </select>
-                    </label>
-                    <label>
-                        <legend></legend>
-                        <input type="text" id="whenFindThis" autocomplete="off">
-                    </label>
-                </span>
-                <span>
-                    <label>
-                        <legend>Classificar como</legend>
-                        <select id="classifyAs">
-                            <option value="">Selecione uma conta</option>
-                        </select>
-                    </label>
-                </span>
-            </div>
+            <label>
+                <legend>Quando encontrar</legend>
+                <input type="text" id="whenFindThis" autocomplete="off">
+            </label>
+            <label>
+                <legend>Classificar como</legend>
+                <select id="classifyAs">
+                    <option value="">Selecione uma conta</option>
+                </select>
+            </label>
             <button onclick="associate_description()">Vincular</button>
         </div>
     </dialog>
@@ -1413,9 +1442,7 @@
 
             banks.forEach(bank => {
                 bankFilter.innerHTML += `<option value="${bank.cc}">${bank.name} - cc: ${bank.cc}</option>`;
-                if(bank.id == undefined){bank.id = generateShortUUID()}
             });
-            sessionStorage.setItem('banks', JSON.stringify(banks));
 
             show_transactions();
             update_status();
@@ -1432,7 +1459,72 @@
                 sessionStorage.setItem('yearFilter', document.getElementById('year-filter').value);
             });
 
-            document.getElementById('automatic-classification').showModal();
+            const linhas = JSON.parse(sessionStorage.getItem('transactions')) || [];
+            const files = [];
+
+            for (const linha of linhas){
+                if(linha.origin == undefined){
+
+                    const today = new Date();
+                    let createNewFile = true;
+
+                    for(const f of files){
+                        if(f.period == linha.period && f.cc == linha.cc){
+                            createNewFile = false;
+                            linha.origin = f.id;
+                        }
+                    }
+
+                    if(createNewFile){
+                        const file = {
+                            id: generateShortUUID(),
+                            name: `${linha.period}_extrato_.ofx`,
+                            period: linha.period,
+                            balance: '0,00',
+                            date: today.toISOString().split('T')[0],
+                            cc: linha.cc
+                        }
+
+                        files.push(file);
+
+                        for(const b of banks){
+                            if(linha.cc.includes(b.cc)){
+
+                                if(!temObjetos(b.ofxImported)){
+                                    b.ofxImported = [file];
+                                }else{
+                                    b.ofxImported.push(file);
+                                }
+
+                                delete b.lastPeriodImported;
+                                sessionStorage.setItem('banks', JSON.stringify(banks));
+                            }
+                        }
+
+                        function temObjetos(array) {
+                            return array.some(item => typeof item === 'object' && item !== null);
+                        }
+
+                        linha.origin = file.id;
+                    }
+                }
+            }
+
+            for(const b of banks){
+                const today = new Date();
+                
+                b.ofxImported = b.ofxImported.map(file => {
+                    if(file.date == undefined) file.date = today.toISOString().split('T')[0]
+                    delete file.cc;
+                    return file;
+                });
+
+            }
+
+            sessionStorage.setItem('banks', JSON.stringify(banks));
+
+            sessionStorage.setItem('transactions', JSON.stringify(linhas));
+
         });
 
         function open_frament_transaction(){
@@ -1689,12 +1781,6 @@
 
             const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
 
-            let lastPeriodImported = parseInt(bankStartDate.value.split('/').reverse().join("")) - 1;
-
-            if(lastPeriodImported.toString().slice(4, 6) == "00"){
-                lastPeriodImported = `${parseInt(lastPeriodImported.toString().slice(0, 4)) - 1}12`;
-            }
-
             if(bank_code.value == "" || bank_name.value == "" || cc.value == "" || bankStartDate.value == "" || bankStartBalance.value == "" || ledge_account.value == ""){ return }
 
             if(document.getElementById('bank-accounts').value == 0){
@@ -1706,8 +1792,7 @@
                 date: bankStartDate.value,
                 balance: bankStartBalance.value,
                 jounal_account: ledge_account.value,
-                ofxImported: [],
-                lastPeriodImported: lastPeriodImported
+                ofxImported: []
                 });
             }else{
                 for(const bank of banks){
@@ -1718,7 +1803,6 @@
                         bank.date = bankStartDate.value;
                         bank.balance = bankStartBalance.value;
                         bank.jounal_account = ledge_account.value;
-                        bank.lastPeriodImported = lastPeriodImported;
                         break;
                     }
                 }
@@ -1826,6 +1910,7 @@
         function open_import_ofx_modal(){
             const modal = document.getElementById('importofx-modal');
             const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+            const filesTable = modal.querySelector('table tbody');
 
             const select_bank = document.getElementById('ofx-bank');
             select_bank.innerHTML = '<option value="0">Selecione um banco</option>';
@@ -1845,7 +1930,105 @@
                 modal.querySelector('h6').textContent = file.name;
             });
 
+            const finalBalance = document.getElementById('ofx-given-balance');
+            finalBalance.value = "0,00";
+            finalBalance.addEventListener('input', () => {
+                finalBalance.value = mask(finalBalance.value, "##.###.###.##0,00");
+            });
+
+            const selectedBank = document.getElementById('ofx-bank');
+            const ofxYear = document.getElementById('ofx-year');
+            selectedBank.addEventListener('change', listImportedFiles);
+            ofxYear.addEventListener('change', listImportedFiles);
+
+            listImportedFiles();
+
             modal.showModal();
+
+            function listImportedFiles(){
+
+                let bank = null;
+
+                filesTable.innerHTML = '';
+
+                for(const b of banks){
+                    if (b.cc === selectedBank.value){
+                        bank = b;
+                    } 
+                }
+
+                for(i = 1; i <= 12; i++){
+                    const tr = document.createElement('tr');
+
+                    const period = document.createElement('td');
+                    const date = document.createElement('td');
+                    const fileName = document.createElement('td');
+                    const finalBalance = document.createElement('td');
+                    const more = document.createElement('td');
+
+                    if(bank){
+                        
+                        period.textContent = `${document.getElementById('ofx-year').value}-${i.toString().padStart(2, '0')}`;
+
+                        if(bank.ofxImported.length === 0){
+                            fileName.textContent = '.';
+                        }else{
+                            for(const file of bank.ofxImported){
+                                if(file.period == period.textContent.replace('-', '')){ 
+                                    tr.id = file.id;
+                                    date.textContent = file.date;
+                                    fileName.textContent = file.name.replace('.ofx', '').substring(0, 45) + '.ofx';
+                                    finalBalance.textContent = file.balance;
+                                    more.innerHTML =
+                                    `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#000">
+                                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"></path>
+                                    </svg>`;
+                                    more.firstElementChild.addEventListener('click', () => delete_ofx(file.id));
+                                    break;
+                                }else{
+                                    fileName.textContent = '.';
+                                }
+                            }
+                        }
+
+                    }else{
+                        fileName.textContent = '.';
+                    }
+                    
+                    tr.appendChild(period);
+                    tr.appendChild(date);
+                    tr.appendChild(fileName);
+                    tr.appendChild(finalBalance);
+                    tr.appendChild(more);
+
+                    filesTable.appendChild(tr);
+                }
+            }
+        }
+
+        function delete_ofx(id){
+            let banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+            let transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+
+            if(transactions.some(t => t.origin == id && t.status == "CONFIRMADO")){
+                showNotification('Não foi possível completar a requisição, há lançamento(s) com status CONFIRMADO no perído que deseja excluir.');
+                hideNotification(2500);
+                return;
+            }
+
+            for(let bank of banks){
+                bank.ofxImported = bank.ofxImported.filter(ofx => ofx.id != id);
+            }
+
+            transactions = transactions.filter(t => t.origin != id);
+
+            sessionStorage.setItem('banks', JSON.stringify(banks));
+            sessionStorage.setItem('transactions', JSON.stringify(transactions));
+
+            showNotification('done');
+            hideNotification(1500);
+
+            location.reload();
         }
 
         function open_chartOfAccounts_modal(){
@@ -2324,7 +2507,7 @@
             let foundOfx = {};
 
             for (let i = 1; i <= 12; i++) {
-                const key = filterYear + (i < 10 ? '0' + i : i);
+                const key = `${filterYear}${i.toString().padStart(2, '0')}`;
                 foundOfx[key] = {has: 0, shouldHave: 0};
             }
 
@@ -2334,11 +2517,12 @@
                         foundOfx[key].shouldHave++;
                     }
                 });
-            
-                for (let i = (bank.ofxImported.length - 1); i >= 0; i--) {
-                    if(bank.ofxImported[i] < parseInt(`${filterYear}01`) || bank.ofxImported[i] > parseInt(`${filterYear}12`) ) { continue }
-                    foundOfx[bank.ofxImported[i]].has++;
-                }
+
+                bank.ofxImported.forEach(file => {
+                    if(parseInt(`${filterYear}01`) <= file.period && file.period <= parseInt(`${filterYear}12`)){
+                        foundOfx[file.period].has++;
+                    }
+                });
             });
 
             for(let i = 0; i < statusList.length; i++){
@@ -2913,16 +3097,48 @@
         }
 
         function import_ofx(){
+            if (document.getElementById('ofx-bank').value == 0) return;
+
+            const banks = JSON.parse(sessionStorage.getItem('banks')) || [];
+
+            for(const bank of banks){
+                if(bank.cc == document.getElementById('ofx-bank').value && bank.ofxImported.some(b => b.period == `${document.getElementById('ofx-year').value}${document.getElementById('ofx-month').value}`)){
+                    showNotification("Já existe extrato importado no período selecionado.")
+                    hideNotification(2000);
+                    return;
+                }
+            }
+
             const file = document.getElementById('ofx-input').files[0];
-            if (!file) return;
+            if (!file) {
+                if(confirm("O extrato será importado sem movimentação. Deseja continuar?")){
+                    const today = new Date();
+
+                    const file = {
+                        id: generateShortUUID(),
+                        name: "sem_movimento",
+                        period: `${document.getElementById('ofx-year').value}${document.getElementById('ofx-month').value}`,
+                        balance: document.getElementById('ofx-given-balance').value,
+                        date: today.toISOString().split('T')[0]
+                    }
+
+                    for(const bank of banks){
+                        if(bank.cc == document.getElementById('ofx-bank').value){
+                            bank.ofxImported.push(file)
+                        }
+                    }
+
+                    sessionStorage.setItem('banks', JSON.stringify(banks));
+                    location.reload()
+                }
+            }
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const decoder = new TextDecoder('ISO-8859-1');
-                const ofxContent = decoder.decode(e.target.result);
+                const ofxContent = e.target.result;
                 parseOFX(ofxContent);
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsText(file, 'UTF-8');
 
             document.getElementById('ofx-input').value = '';
 
@@ -2933,6 +3149,7 @@
                 if (!fixedXML) {
                     showNotification("[ERRO] Arquivo inválido");
                     hideNotification(3000);
+                    console.log(fixedXML);
                     return null;
                 }
             
@@ -2965,24 +3182,11 @@
                 const bank = banks.filter(bank => (bank.cc.includes(bankInfo.accountNumber) || bankInfo.accountNumber.includes(bank.cc)))[0] || null;
                 const selected_period = parseInt(document.getElementById('ofx-year').value + document.getElementById('ofx-month').value);
 
-                let nextPeriodTobeImported = parseInt(bank.lastPeriodImported) + 1;
-                
-                if (nextPeriodTobeImported.toString().slice(4, 6) == "13") {
-                    let year = parseInt(nextPeriodTobeImported.toString().slice(0, 4)) + 1;
-                    nextPeriodTobeImported = parseInt(`${year}01`);
-                }
-
                 if(!bankInfo.accountNumber.toString().includes(selected_bank.toString())){
                     showNotification(`[ERRO] C.C. selecionada: ${selected_bank} - C.C. no OFX: ${bankInfo.accountNumber.toString()}`);
                     hideNotification(5000);
                     return;
                 }
-
-                // if(selected_period < parseInt(bank.date.split('/').reverse().join("")) || nextPeriodTobeImported != selected_period){
-                //     showNotification(`[ERRO] Periodo fora da sequência: [Era esperado: ${nextPeriodTobeImported}] - [Foi encontrado: ${selected_period}]`);
-                //     hideNotification(3000);
-                //     return
-                // }
             
                 // Buscar transações
                 let transactionNodes = xmlDoc.getElementsByTagName("STMTTRN");
@@ -2991,13 +3195,22 @@
                 }
             
                 const transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+
+                const today = new Date();
+
+                const ofx_details = {
+                    id: generateShortUUID(),
+                    name: file.name,
+                    period: `${document.getElementById('ofx-year').value}${document.getElementById('ofx-month').value}`,
+                    balance: document.getElementById('ofx-given-balance').value,
+                    date: today.toISOString().split('T')[0]
+                }
             
                 banks = banks.map(bank => {
                     if(bank.cc.includes(bankInfo.accountNumber) || bankInfo.accountNumber.includes(bank.cc)){
                         return {
                             ...bank,
-                            ofxImported: [...new Set([...bank.ofxImported, selected_period])],
-                            lastPeriodImported: selected_period
+                            ofxImported: [...bank.ofxImported, ofx_details]
                         }
                     }
                     return bank;
@@ -3016,6 +3229,7 @@
             
                     newTransactions.push({
                         id: generateShortUUID(),
+                        origin: ofx_details.id,
                         period: selected_period,
                         bankID: bankInfo.bankID,
                         cc: bankInfo.accountNumber,
@@ -3035,21 +3249,30 @@
                 execute_automatic_association('automatic');
             
                 function fixOFXFormat(ofxText) {
-                    // Remover cabeçalhos antes do <OFX>
                     const cleanText = removeHeaders(ofxText);
                     if (!cleanText) return null;
-                
-                    return cleanText
-                        // Remover espaços extras entre tags
-                        .replace(/>\s+</g, '><')
-                        // Fechar tags abertas sem fechamento
-                        .replace(/<(\w+?)>([^<\n]+)/g, "<$1>$2</$1>")
-                        // Remover fechamentos duplicados (ex: </TAG></TAG>)
-                        .replace(/<\/(\w+?)><\/\1>/g, "</$1>")
-                        // Substituir quebras de linha extras dentro de tags vazias
-                        .replace(/<(\w+?)>\s*<\/\1>/g, "<$1/>")
-                        // Corrigir caracteres especiais (& para &amp;)
-                        .replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, "&amp;");
+
+                    let xmlContent = cleanText;
+
+                    // 1. Corrigir caracteres especiais (& vira &amp;)
+                    xmlContent = xmlContent.replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, "&amp;");
+
+                    // 2. Remover quebras de linha (\r, \n) dentro de conteúdo de tag
+                    xmlContent = xmlContent.replace(/>([^<]+)</g, (match, content) => {
+                        const cleanedContent = content.replace(/[\r\n]+/g, '').trim();
+                        return `>${cleanedContent}<`;
+                    });
+
+                    // 3. Corrigir TRNTYPE abertos com filhos (substituir pelo valor padrão 'UNKNOWN' para fechar)
+                    xmlContent = xmlContent.replace(/<TRNTYPE>(?=<)/g, "<TRNTYPE>UNKNOWN</TRNTYPE>");
+
+                    // 4. Corrigir tags abertas que não foram fechadas e que contém só texto
+                    xmlContent = xmlContent.replace(/<(\w+)>([^<]+)(?![^<]*<\/\1>)/g, "<$1>$2</$1>");
+
+                    // 5. Remover fechamentos duplicados gerados por engano
+                    xmlContent = xmlContent.replace(/<\/(\w+)><\/\1>/g, "</$1>");
+
+                    return xmlContent;
                 }
                 
                 function removeHeaders(ofxText) {
@@ -3077,12 +3300,13 @@
         }
 
         function mascaraCNPJ(input) {
-            let valor = input.value.replace(/\D/g, "");
+            let valor = input.value.replace(/\D/g, ""); // Remove tudo que não for número
 
             if (valor.length > 14) {
-                valor = valor.slice(0, 14);
+                valor = valor.slice(0, 14); // Limita a 14 caracteres
             }
 
+            // Aplica a formatação
             valor = valor.replace(/^(\d{2})(\d)/, "$1.$2");
             valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
             valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2");
@@ -3094,19 +3318,24 @@
         function mascaraMoeda(input) {
             let valor = input.value;
 
+            // Remove tudo que não for número, vírgula, ponto ou sinal de menos
             valor = valor.replace(/[^0-9,-]/g, "");
 
+            // Permite apenas um único sinal de negativo no início
             if (valor.includes("-")) {
                 valor = "-" + valor.replace(/-/g, "");
             }
 
+            // Garante que só haja uma vírgula (separador decimal)
             let partes = valor.split(",");
             if (partes.length > 2) {
                 valor = partes[0] + "," + partes.slice(1).join("");
             }
 
+            // Remove zeros à esquerda, exceto antes da vírgula
             valor = valor.replace(/^(-?)0+(?![,0-9])/g, "$1");
 
+            // Converte para número e limita a 2 casas decimais
             let numero = valor.replace(",", ".");
             if (!isNaN(numero) && numero !== "") {
                 let formatado = parseFloat(numero).toLocaleString("pt-BR", {
@@ -3114,11 +3343,12 @@
                     maximumFractionDigits: 2,
                 });
 
+                // Mantém a posição do cursor ao digitar
                 let cursorPos = input.selectionStart;
                 input.value = formatado;
                 input.setSelectionRange(cursorPos, cursorPos);
             } else {
-                input.value = valor;
+                input.value = valor; // Mantém o valor enquanto digita
             }
         }
 
@@ -3158,6 +3388,6 @@
 
             return maskedValue;
         }
-    </script>
+    </script>   
 </body>
 </html>
