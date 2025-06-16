@@ -1655,6 +1655,7 @@
 
                 hashMap.set(newId, {
                     id: newId,
+                    origin: hashMap.get(id).origin,
                     period: hashMap.get(id).period,
                     bankID: hashMap.get(id).bankID,
                     cc: hashMap.get(id).cc,
@@ -3153,7 +3154,7 @@
                     return null;
                 }
             
-                //console.log("🔎 XML Ajustado:\n", fixedXML); // Verificar XML corrigido
+                // console.log("🔎 XML Ajustado:\n", fixedXML); // Verificar XML corrigido
             
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(fixedXML, "text/xml");
@@ -3224,7 +3225,7 @@
                     const node = transactionNodes[i];
             
                     if(!node.getElementsByTagName("DTPOSTED")[0]?.textContent.trim().includes(selected_period)){
-                        break;
+                        continue;
                     }
             
                     newTransactions.push({
