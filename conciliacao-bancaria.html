@@ -1627,11 +1627,11 @@
             let total = 0;
 
             for (const input of list.querySelectorAll('input[name="fragment-value"]')) {
-                total += parseFloat(input.value.replace('.', '').replace(',', '.')) || 0;
+                total += parseFloat(input.value.replace(/\./g, '', '').replace(',', '.')) || 0;
             }
 
             document.getElementById('total-fragmented').textContent = 
-                `Total Fragmentado: ${mask((total * 100).toString(), '##.###.###.##0,00')}`;
+                `Total Fragmentado: ${mask((total).toFixed(2), '##.###.###.##0,00')}`;
         }
 
         function fragment_transaction(){
@@ -1652,6 +1652,12 @@
 
             for (const fragment of modal.querySelectorAll('ul li')){
                 const newId = generateShortUUID();
+
+                if(fragment.querySelectorAll('input')[1].value == ""){
+                    showNotification("Fragmento com valor inválido.");
+                    hideNotification(2500);
+                    return;
+                }
 
                 hashMap.set(newId, {
                     id: newId,
