@@ -47,6 +47,12 @@
                 Exportar .JSON
             </button>
             
+            <p class="text-[10px] text-gray-500 uppercase tracking-wider px-2 py-1 bg-gray-200 border border-gray-300 font-semibold mt-2">Lançamentos</p>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="openManualTransactionModal(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+                Nova Transação
+            </button>
+            
             <p class="text-[10px] text-gray-500 uppercase tracking-wider px-2 py-1 bg-gray-200 border border-gray-300 font-semibold mt-2">Cadastros</p>
             <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="open_bank_modal(); toggleSidebar();">
                 <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M200-280v-280h80v280h-80Zm240 0v-280h80v280h-80ZM80-120v-80h800v80H80Zm600-160v-280h80v280h-80ZM80-640v-80l400-200 400 200v80H80Z"/></svg>
@@ -711,6 +717,55 @@
             
             <div class="flex justify-end">
                 <button class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="exportToCSV()">Gerar CSV</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Modal Nova Transação Manual -->
+    <dialog id="manual-transaction-modal" class="dialog-base p-0 w-[500px] bg-gray-100 border-2 border-gray-500 shadow-lg">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Nova Transação Manual</span>
+            <button onclick="document.getElementById('manual-transaction-modal').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 flex flex-col gap-3">
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Dados da Transação</legend>
+                <div class="flex flex-col gap-2">
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="text-[10px] text-gray-600">Banco *</label>
+                            <select id="manual-bank" class="w-full border border-gray-400 bg-white px-2 py-1 text-xs">
+                                <option value="0">Selecione um banco</option>
+                            </select>
+                        </div>
+                        <div class="w-32">
+                            <label class="text-[10px] text-gray-600">Data *</label>
+                            <input type="date" id="manual-date" class="w-full border border-gray-400 px-2 py-1 text-xs">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-600">Descrição / Histórico *</label>
+                        <input type="text" id="manual-description" class="w-full border border-gray-400 px-2 py-1 text-xs" placeholder="Ex: PAGAMENTO FORNECEDOR XYZ">
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="text-[10px] text-gray-600">Valor *</label>
+                            <input type="text" id="manual-amount" class="w-full border border-gray-400 px-2 py-1 text-xs font-mono text-right" placeholder="0,00" onkeyup="mascaraMoeda(this)">
+                        </div>
+                        <div class="w-32">
+                            <label class="text-[10px] text-gray-600">Tipo *</label>
+                            <select id="manual-type" class="w-full border border-gray-400 bg-white px-2 py-1 text-xs">
+                                <option value="DEBIT">Débito (Saída)</option>
+                                <option value="CREDIT">Crédito (Entrada)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <div class="flex justify-end gap-2">
+                <button class="px-3 py-1 border border-gray-400 bg-gray-100 hover:bg-gray-200 cursor-pointer text-xs" onclick="document.getElementById('manual-transaction-modal').close()">Cancelar</button>
+                <button class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="saveManualTransaction()">Salvar</button>
             </div>
         </div>
     </dialog>

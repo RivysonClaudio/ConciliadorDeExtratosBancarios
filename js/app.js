@@ -134,6 +134,121 @@ function closeFragmentPanel() {
     modal.close();
 }
 
+function openManualTransactionModal() {
+    const modal = document.getElementById('manual-transaction-modal');
+    const banks = StorageManager.getBanks();
+    const bankSelect = document.getElementById('manual-bank');
+    
+    // Preencher select de bancos
+    bankSelect.innerHTML = '<option value="0">Selecione um banco</option>';
+    banks.forEach(bank => {
+        const option = document.createElement('option');
+        option.value = bank.id;
+        option.textContent = `${bank.code} - ${bank.name}`;
+        bankSelect.appendChild(option);
+    });
+    
+    // Selecionar primeiro banco se existir
+    if (banks.length > 0) {
+        bankSelect.value = banks[0].id;
+    }
+    
+    // Setar data atual
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('manual-date').value = today;
+    
+    // Limpar campos
+    document.getElementById('manual-description').value = '';
+    document.getElementById('manual-amount').value = '';
+    document.getElementById('manual-type').value = 'DEBIT';
+    
+    modal.showModal();
+}
+
+function saveManualTransaction() {
+    const bankId = document.getElementById('manual-bank').value;
+    const date = document.getElementById('manual-date').value;
+    const description = document.getElementById('manual-description').value.trim();
+    const amountStr = document.getElementById('manual-amount').value;
+    const type = document.getElementById('manual-type').value;
+    
+    // Validações
+    if (bankId === '0') {
+        showNotification('Selecione um banco', 'warning');
+        return;
+    }
+    
+    if (!date) {
+        showNotification('Informe a data', 'warning');
+        return;
+    }
+    
+    if (!description) {
+        showNotification('Informe a descrição', 'warning');
+        return;
+    }
+    
+    if (!amountStr) {
+        showNotification('Informe o valor', 'warning');
+        return;
+    }
+    
+    // Buscar banco
+    const banks = StorageManager.getBanks();
+    const bank = banks.find(b => b.id === bankId);
+    
+    if (!bank) {
+        showNotification('Banco não encontrado', 'error');
+        return;
+    }
+    
+    // Converter valor para formato correto
+    let amount = Utils.parseAmount(amountStr);
+    
+    // Se for débito, garantir que seja negativo
+    if (type === 'DEBIT' && amount > 0) {
+        amount = -amount;
+    }
+    // Se for crédito, garantir que seja positivo
+    if (type === 'CREDIT' && amount < 0) {
+        amount = -amount;
+    }
+    
+    // Formatar data no padrão OFX (YYYYMMDD000000[-3:GMT])
+    const dateFormatted = date.replace(/-/g, '') + '000000[-3:GMT]';
+    
+    // Calcular período (YYYYMM)
+    const period = date.replace(/-/g, '').slice(0, 6);
+    
+    // Criar transação
+    const transactionId = Utils.generateShortUUID();
+    const transaction = {
+        id: transactionId,
+        origin: bank.id,
+        bankID: bank.code || '',
+        cc: bank.cc,
+        date: dateFormatted,
+        period: period,
+        type: type,
+        description: description.toUpperCase(),
+        amount: amount.toFixed(2),
+        status: 'PENDENTE',
+        classification: ''
+    };
+    
+    // Salvar
+    const transactions = StorageManager.getTransactions();
+    transactions.push(transaction);
+    StorageManager.setTransactions(transactions);
+    
+    // Fechar modal e atualizar lista
+    document.getElementById('manual-transaction-modal').close();
+    TransactionManager.show();
+    TransactionManager.updateStatus();
+    
+    showNotification('Transação adicionada com sucesso', 'success');
+}
+
 function openImportOFXModal() {
     const modal = document.getElementById('importofx-modal');
     const banks = StorageManager.getBanks();
