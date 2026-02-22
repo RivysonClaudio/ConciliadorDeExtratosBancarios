@@ -5,6 +5,7 @@ class NaiveBayes {
         this.vocabulary = new Set();
         this.documentFrequency = new Map();
         this.smoothingFactor = 1;
+        this.blacklist = new Map(); // categoria -> Set de tokens que NÃO pertencem a ela
         
         this.stopWords = new Set([
             'de', 'da', 'do', 'das', 'dos', 'em', 'na', 'no', 'nas', 'nos',
@@ -134,7 +135,17 @@ class NaiveBayes {
         const words = this.tokenize(phrase);
         const features = this.generateNgrams(words, 2);
 
+        // Adicionar tokens à blacklist da categoria
+        if (!this.blacklist.has(wrongCategory)) {
+            this.blacklist.set(wrongCategory, new Set());
+        }
+        const categoryBlacklist = this.blacklist.get(wrongCategory);
+
         features.forEach(word => {
+            // Adicionar à blacklist
+            categoryBlacklist.add(word);
+            
+            // Também reduzir o peso (comportamento original)
             const count = categoryData.wordCounts.get(word) || 0;
             if (count > 0) {
                 categoryData.wordCounts.set(word, count - 1);
@@ -169,6 +180,18 @@ class NaiveBayes {
             if (data.docCount === 0) continue;
             
             let categoryProbability = Math.log(data.docCount / this.totalDocuments);
+            
+            // Verificar blacklist - penalidade forte se tokens estão na blacklist
+            const categoryBlacklist = this.blacklist.get(category);
+            let blacklistPenalty = 0;
+            
+            if (categoryBlacklist) {
+                features.forEach(word => {
+                    if (categoryBlacklist.has(word)) {
+                        blacklistPenalty += 2.0; // Penalidade forte por cada token na blacklist
+                    }
+                });
+            }
 
             features.forEach(word => {
                 const wordCount = data.wordCounts.get(word) || 0;
@@ -178,6 +201,9 @@ class NaiveBayes {
                 const wordProbability = Math.log(smoothedCount / smoothedTotal);
                 categoryProbability += wordProbability * (1 + tfidfBoost * 0.5);
             });
+            
+            // Aplicar penalidade da blacklist
+            categoryProbability -= blacklistPenalty;
 
             categoryProbabilities.set(category, categoryProbability);
             if (categoryProbability > maxLog) {
@@ -214,12 +240,18 @@ class NaiveBayes {
                 docCount: data.docCount
             };
         }
+        
+        const blacklist = {};
+        for (const [category, tokens] of this.blacklist.entries()) {
+            blacklist[category] = Array.from(tokens);
+        }
 
         return JSON.stringify({
             categories,
             totalDocuments: this.totalDocuments,
             vocabulary: Array.from(this.vocabulary),
-            documentFrequency: Object.fromEntries(this.documentFrequency)
+            documentFrequency: Object.fromEntries(this.documentFrequency),
+            blacklist
         });
     }
 
@@ -246,6 +278,14 @@ class NaiveBayes {
         } else {
             this.rebuildDocumentFrequency();
         }
+        
+        // Carregar blacklist
+        this.blacklist = new Map();
+        if (data.blacklist) {
+            for (const [category, tokens] of Object.entries(data.blacklist)) {
+                this.blacklist.set(category, new Set(tokens));
+            }
+        }
     }
 
     rebuildDocumentFrequency() {
@@ -262,6 +302,7 @@ class NaiveBayes {
         this.totalDocuments = 0;
         this.vocabulary = new Set();
         this.documentFrequency = new Map();
+        this.blacklist = new Map();
     }
 
     optimize(minDocsPerCategory = 5, minWordOccurrences = 2) {
@@ -382,12 +423,20 @@ class NaiveBayes {
             suggestedThreshold = 0.7;
         }
 
+        // Contar tokens na blacklist
+        let blacklistCount = 0;
+        for (const [, tokens] of this.blacklist.entries()) {
+            blacklistCount += tokens.size;
+        }
+
         return { 
             avgDocsPerCategory, 
             weakCategories, 
             suggestedThreshold,
             ngramCount,
-            stopWordsActive: true
+            stopWordsActive: true,
+            blacklistCount,
+            categoriesWithBlacklist: this.blacklist.size
         };
     }
 }

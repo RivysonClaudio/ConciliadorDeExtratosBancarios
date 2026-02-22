@@ -295,7 +295,7 @@
             </div>
             <!-- Table Footer -->
             <div class="h-5 bg-gray-200 border-t border-gray-300 flex items-center justify-between px-2 text-[10px] text-gray-600">
-                <span>Duplo clique para editar</span>
+                <span>Duplo clique para editar | Ctrl + Clique para marcar / desmarcar</span>
                 <span id="table-status"></span>
             </div>
         </div>
@@ -725,7 +725,7 @@
             <!-- Estatísticas -->
             <fieldset class="border border-gray-400 p-2">
                 <legend class="text-[10px] text-gray-600 font-semibold px-1">Estatísticas do Modelo</legend>
-                <div class="grid grid-cols-4 gap-2 text-center">
+                <div class="grid grid-cols-5 gap-2 text-center">
                     <div class="bg-white border border-gray-300 p-2">
                         <div id="ml-stat-categories" class="text-lg font-bold text-gray-700">0</div>
                         <div class="text-[10px] text-gray-500">Categorias</div>
@@ -737,6 +737,10 @@
                     <div class="bg-white border border-gray-300 p-2">
                         <div id="ml-stat-vocabulary" class="text-lg font-bold text-gray-700">0</div>
                         <div class="text-[10px] text-gray-500">Vocabulário</div>
+                    </div>
+                    <div class="bg-white border border-gray-300 p-2">
+                        <div id="ml-stat-blacklist" class="text-lg font-bold text-gray-700">0</div>
+                        <div class="text-[10px] text-gray-500">Blacklist</div>
                     </div>
                     <div class="bg-white border border-gray-300 p-2">
                         <div id="ml-stat-threshold" class="text-lg font-bold text-gray-700">40%</div>

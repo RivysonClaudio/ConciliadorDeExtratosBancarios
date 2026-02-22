@@ -518,10 +518,12 @@ function updateMLPanelStats() {
     const vocabulary = MachineLearning.vocabulary.size;
     const threshold = StorageManager.getMLThreshold();
     const lastTrain = StorageManager.getMLLastTrain();
+    const stats = MachineLearning.getStats();
 
     document.getElementById('ml-stat-categories').textContent = categories;
     document.getElementById('ml-stat-documents').textContent = documents;
     document.getElementById('ml-stat-vocabulary').textContent = vocabulary;
+    document.getElementById('ml-stat-blacklist').textContent = stats.blacklistCount || 0;
     document.getElementById('ml-stat-threshold').textContent = Math.round(threshold * 100) + '%';
 
     if (lastTrain) {
