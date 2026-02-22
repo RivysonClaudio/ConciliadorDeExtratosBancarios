@@ -73,7 +73,9 @@ class BankManager {
             return;
         }
 
-        if (document.getElementById('bank-accounts').value == 0) {
+        const selectedBankId = document.getElementById('bank-accounts').value;
+        
+        if (selectedBankId === "0") {
             banks.push({
                 id: Utils.generateShortUUID(),
                 code: bank_code.value,
@@ -85,16 +87,14 @@ class BankManager {
                 ofxImported: []
             });
         } else {
-            for (const bank of banks) {
-                if (bank.id == document.getElementById('bank-accounts').value) {
-                    bank.code = bank_code.value;
-                    bank.name = bank_name.value;
-                    bank.cc = cc.value;
-                    bank.date = bankStartDate.value;
-                    bank.balance = bankStartBalance.value;
-                    bank.jounal_account = ledge_account.value;
-                    break;
-                }
+            const bankIndex = banks.findIndex(bank => bank.id === selectedBankId);
+            if (bankIndex !== -1) {
+                banks[bankIndex].code = bank_code.value;
+                banks[bankIndex].name = bank_name.value;
+                banks[bankIndex].cc = cc.value;
+                banks[bankIndex].date = bankStartDate.value;
+                banks[bankIndex].balance = bankStartBalance.value;
+                banks[bankIndex].jounal_account = ledge_account.value;
             }
         }
 
