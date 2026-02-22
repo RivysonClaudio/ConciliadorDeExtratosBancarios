@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conciliador Bancário - Rivyson</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#084D6E',
+                        'status-green': '#90EE90',
+                        'status-yellow': '#FDE55D',
+                        'status-red': '#FA697A',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans m-0 bg-gray-200 text-gray-800 text-sm">
+    <!-- Sidebar Menu -->
+    <aside id="sidebar" class="fixed left-0 top-0 h-full w-56 bg-gray-100 border-r-2 border-gray-400 z-30 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg flex flex-col">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Menu Principal</span>
+            <button onclick="toggleSidebar()" class="text-white hover:text-gray-300">✕</button>
+        </div>
+        <nav class="p-2 flex flex-col gap-0.5 flex-1 overflow-y-auto">
+            <p class="text-[10px] text-gray-500 uppercase tracking-wider px-2 py-1 bg-gray-200 border border-gray-300 font-semibold">Importar / Exportar</p>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="import_json(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
+                Importar .JSON
+            </button>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="openImportOFXModal(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
+                Importar .OFX
+            </button>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="export_csv(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
+                Exportar .CSV
+            </button>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="export_json(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
+                Exportar .JSON
+            </button>
+            
+            <p class="text-[10px] text-gray-500 uppercase tracking-wider px-2 py-1 bg-gray-200 border border-gray-300 font-semibold mt-2">Cadastros</p>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="open_bank_modal(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M200-280v-280h80v280h-80Zm240 0v-280h80v280h-80ZM80-120v-80h800v80H80Zm600-160v-280h80v280h-80ZM80-640v-80l400-200 400 200v80H80Z"/></svg>
+                Contas Bancárias
+            </button>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="open_chartOfAccounts_modal(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M280-600v-80h560v80H280Zm0 160v-80h560v80H280Zm0 160v-80h560v80H280ZM160-600q-17 0-28.5-11.5T120-640q0-17 11.5-28.5T160-680q17 0 28.5 11.5T200-640q0 17-11.5 28.5T160-600Z"/></svg>
+                Plano de Contas
+            </button>
+            
+            <p class="text-[10px] text-gray-500 uppercase tracking-wider px-2 py-1 bg-gray-200 border border-gray-300 font-semibold mt-2">Automação</p>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="openAutomaticClassificationModal(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="m344-60-76-128-144-32 14-148-98-112 98-112-14-148 144-32 76-128 136 58 136-58 76 128 144 32-14 148 98 112-98 112 14 148-144 32-76 128-136-58-136 58Z"/></svg>
+                Classificação Automática
+            </button>
+            
+            <p class="text-[10px] text-gray-500 uppercase tracking-wider px-2 py-1 bg-gray-200 border border-gray-300 font-semibold mt-2">Machine Learning</p>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="openMLPanel(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-80q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170t-170 70Zm0-80q66 0 113-47t47-113q0-66-47-113t-113-47q-66 0-113 47t-47 113q0 66 47 113t113 47Zm0-80q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Z"/></svg>
+                Painel ML
+            </button>
+            <button class="w-full text-left px-2 py-1.5 hover:bg-blue-100 border border-transparent hover:border-gray-400 flex items-center gap-2 text-xs" onclick="auto_classify(); toggleSidebar();">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480h80q0 134 93 227t227 93q134 0 227-93t93-227q0-134-93-227t-227-93v-80q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80ZM360-320v-120H240v-80h120v-120h80v120h120v80H440v120h-80Z"/></svg>
+                Classificar Selecionados (ML)
+            </button>
+            
+            <div class="mt-auto pt-2 border-t border-gray-300">
+                <button class="w-full text-left px-2 py-1.5 bg-red-100 hover:bg-red-200 border border-red-300 flex items-center gap-2 text-xs text-red-700" onclick="clear_all(); toggleSidebar();">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Z"/></svg>
+                    Limpar Tudo
+                </button>
+            </div>
+        </nav>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-20 hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Header / Title Bar -->
+    <header class="fixed top-0 left-0 right-0 h-7 bg-gray-700 flex items-center px-2 gap-2 z-10 text-white text-xs">
+        <button onclick="toggleSidebar()" class="px-2 py-0.5 bg-gray-600 hover:bg-gray-500 border border-gray-500 text-[10px]" title="Menu">
+            ☰ Menu
+        </button>
+        <span class="text-gray-400">|</span>
+        <span class="font-semibold">Conciliador Bancário</span>
+        <span class="text-gray-400">-</span>
+        <input id="header-razao" class="flex-1 outline-none bg-gray-600 border border-gray-500 px-2 py-0.5 text-white placeholder-gray-400 text-xs" type="text" placeholder="Razão Social" autocomplete="off">
+        <input id="header-cnpj" class="w-36 outline-none bg-gray-600 border border-gray-500 px-2 py-0.5 text-white text-center placeholder-gray-400 text-xs" type="text" placeholder="CNPJ" autocomplete="off" oninput="mascaraCNPJ(this)">
+        <button class="px-3 py-0.5 bg-gray-600 hover:bg-gray-500 border border-gray-500 text-[10px]" onclick="saveHeaderInfo()">Salvar</button>
+    </header>
+    
+    <!-- Monthly Status Bar -->
+    <div class="fixed top-7 left-0 right-0 h-6 bg-gray-200 border-b border-gray-400 z-10 flex items-center px-1">
+        <span class="text-[10px] text-gray-600 font-semibold px-2">Status:</span>
+        <ul class="list-none p-0 m-0 flex h-full flex-1">
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="01"></div>
+                <span>Jan</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="02"></div>
+                <span>Fev</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="03"></div>
+                <span>Mar</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="04"></div>
+                <span>Abr</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="05"></div>
+                <span>Mai</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="06"></div>
+                <span>Jun</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="07"></div>
+                <span>Jul</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="08"></div>
+                <span>Ago</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="09"></div>
+                <span>Set</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="10"></div>
+                <span>Out</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px] border-r border-gray-300">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="11"></div>
+                <span>Nov</span>
+            </li>
+            <li class="flex-1 flex items-center justify-center gap-1 text-[10px]">
+                <div class="month-status border border-gray-500 w-2 h-2" data-month-status="12"></div>
+                <span>Dez</span>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div class="fixed top-[52px] left-0 right-0 h-8 bg-gray-100 border-b border-gray-400 flex items-center px-2 gap-2 z-10">
+        <span class="text-[10px] text-gray-600 font-semibold">Filtros:</span>
+        
+        <select id="bank-selection" class="h-5 px-1 border border-gray-400 text-xs bg-white cursor-pointer" onchange="show_transactions()">
+            <option value="0">Todos os Bancos</option>
+        </select>
+        
+        <span class="text-gray-400">|</span>
+        
+        <span class="text-[10px] text-gray-600">Período:</span>
+        <select name="initial-month" id="initial-month" class="h-5 px-1 border border-gray-400 text-xs bg-white cursor-pointer">
+            <option value="01" selected>Jan</option>
+            <option value="02">Fev</option>
+            <option value="03">Mar</option>
+            <option value="04">Abr</option>
+            <option value="05">Mai</option>
+            <option value="06">Jun</option>
+            <option value="07">Jul</option>
+            <option value="08">Ago</option>
+            <option value="09">Set</option>
+            <option value="10">Out</option>
+            <option value="11">Nov</option>
+            <option value="12">Dez</option>
+        </select>
+        <span class="text-[10px] text-gray-500">a</span>
+        <select name="final-month" id="final-month" class="h-5 px-1 border border-gray-400 text-xs bg-white cursor-pointer">
+            <option value="01">Jan</option>
+            <option value="02">Fev</option>
+            <option value="03">Mar</option>
+            <option value="04">Abr</option>
+            <option value="05">Mai</option>
+            <option value="06">Jun</option>
+            <option value="07">Jul</option>
+            <option value="08">Ago</option>
+            <option value="09">Set</option>
+            <option value="10">Out</option>
+            <option value="11">Nov</option>
+            <option value="12" selected>Dez</option>
+        </select>
+        <span class="text-[10px] text-gray-500">/</span>
+        <select name="year-filter" id="year-filter" class="h-5 px-1 border border-gray-400 text-xs bg-white cursor-pointer">
+            <option value="2026">2026</option>
+            <option value="2025" selected>2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+        </select>
+        
+        <button class="h-5 px-2 bg-gray-200 hover:bg-gray-300 border border-gray-400 text-[10px] cursor-pointer" onclick="show_transactions()">
+            Filtrar
+        </button>
+        
+        <span class="text-gray-400">|</span>
+        
+        <input id="search-transactions" type="search" class="flex-1 h-5 px-2 border border-gray-400 text-xs" placeholder="Buscar..." oninput="dinamicFilter()" autocomplete="off">
+        
+        <span class="text-gray-400">|</span>
+        
+        <label class="flex items-center gap-1 cursor-pointer text-[10px]">
+            <input type="checkbox" id="only-incomes" checked onchange="show_transactions()" class="cursor-pointer">
+            <span>Entradas</span>
+        </label>
+        <label class="flex items-center gap-1 cursor-pointer text-[10px]">
+            <input type="checkbox" id="only-outcomes" checked onchange="show_transactions()" class="cursor-pointer">
+            <span>Saídas</span>
+        </label>
+        <label class="flex items-center gap-1 cursor-pointer text-[10px]">
+            <input type="checkbox" id="only-pending" onchange="show_transactions()" class="cursor-pointer">
+            <span>Pendentes</span>
+        </label>
+        <label class="flex items-center gap-1 cursor-pointer text-[10px]">
+            <input type="checkbox" id="show-canceled" onchange="show_transactions()" class="cursor-pointer">
+            <span>Cancelados</span>
+        </label>
+    </div>
+    
+    <!-- Account Balance Info -->
+    <div class="fixed top-[84px] left-0 right-0 h-7 bg-gray-50 border-b-2 border-gray-400 flex items-center justify-between px-2 z-10">
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] text-gray-600 font-semibold">Transações:</span>
+            <input type="text" class="w-12 text-center border border-gray-400 bg-white px-1 h-5 text-xs font-mono" id="numberOfTransactions" readonly>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1">
+                <span class="text-[10px] text-gray-600">Saldo Ant.:</span>
+                <input id="start-balance" class="w-24 text-right border border-gray-400 bg-white px-1 h-5 text-xs font-mono" type="text" value="0,00" readonly>
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="text-[10px] text-gray-600">Entradas:</span>
+                <input id="incomes" class="w-24 text-right border border-gray-400 bg-white px-1 h-5 text-xs font-mono" type="text" value="0,00" readonly>
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="text-[10px] text-gray-600">Saídas:</span>
+                <input id="outcomes" class="w-24 text-right border border-gray-400 bg-white px-1 h-5 text-xs font-mono" type="text" value="0,00" readonly>
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="text-[10px] text-gray-700 font-semibold">Saldo Final:</span>
+                <input id="end-balance" class="w-24 text-right border border-gray-500 bg-white px-1 h-5 text-xs font-mono font-bold" type="text" value="0,00" readonly>
+            </div>
+        </div>
+        <div class="flex items-center gap-1">
+            <button class="h-5 px-2 bg-gray-200 hover:bg-gray-300 border border-gray-400 text-[10px] cursor-pointer flex items-center gap-1" onclick="open_multipleEdit_modal()" title="Editar selecionados">
+                <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="currentColor">
+                    <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Z"/>
+                </svg>
+                Editar
+            </button>
+            <button class="h-5 px-2 bg-gray-200 hover:bg-gray-300 border border-gray-400 text-[10px] cursor-pointer flex items-center gap-1" onclick="open_fragment_modal()" title="Fragmentar">
+                <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="currentColor">
+                    <path d="M480-400 40-640l440-240 440 240-440 240Zm0 160L63-467l84-46 333 182 333-182 84 46-417 227Z"/>
+                </svg>
+                Fragmentar
+            </button>
+        </div>
+    </div>
+    
+    <!-- Transactions Table -->
+    <main class="fixed top-[111px] left-0 right-0 bottom-0 bg-gray-200 p-1">
+        <div class="h-full bg-white border border-gray-400 flex flex-col overflow-hidden">
+            <!-- Table Header -->
+            <div class="transactions-header transactions-grid items-center bg-gray-200 border-b-2 border-gray-400 text-[10px] font-semibold text-gray-700 uppercase tracking-wide select-none pr-[17px]">
+                <span class="h-full flex items-center justify-center border-r border-gray-300 bg-gray-200">
+                    <input type="checkbox" class="cursor-pointer" id="checkAll-transactions" onclick="checkAllTrasactions()">
+                </span>
+                <span class="h-full flex items-center px-2 border-r border-gray-300">Data</span>
+                <span class="h-full flex items-center px-2 border-r border-gray-300">Banco</span>
+                <span class="h-full flex items-center px-2 border-r border-gray-300">Histórico Bancário</span>
+                <span class="h-full flex items-center justify-end px-2 border-r border-gray-300">Valor</span>
+                <span class="h-full flex items-center justify-center px-2 border-r border-gray-300">Situação</span>
+                <span class="h-full flex items-center px-2">Classificação Contábil</span>
+            </div>
+            <!-- Loading Bar -->
+            <div id="transactionsLoading" class="h-0.5 bg-blue-600 transition-all duration-300" style="width: 0%;"></div>
+            <!-- Table Body -->
+            <div class="flex-1 overflow-hidden">
+                <ul id="transactions-list" class="h-full w-full p-0 overflow-y-scroll list-none m-0"></ul>
+            </div>
+            <!-- Table Footer -->
+            <div class="h-5 bg-gray-200 border-t border-gray-300 flex items-center justify-between px-2 text-[10px] text-gray-600">
+                <span>Duplo clique para editar</span>
+                <span id="table-status"></span>
+            </div>
+        </div>
+    </main>
+
+    <dialog id="importofx-modal" class="dialog-base">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Importar OFX</span>
+            <button onclick="document.getElementById('importofx-modal').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 w-[700px]">
+            <fieldset class="border border-gray-400 p-2 mb-3">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Configurações</legend>
+                <div class="flex gap-2 items-center mb-2">
+                    <span class="text-[10px] text-gray-600">Banco:</span>
+                    <select name="ofx-bank" id="ofx-bank" class="flex-1 border border-gray-400 bg-white px-2 py-1 text-xs">
+                        <option value="0">Selecione um banco</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <span class="text-[10px] text-gray-600">Período:</span>
+                    <select name="ofx-month" id="ofx-month" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                        <option value="01" selected>Jan</option>
+                        <option value="02">Fev</option>
+                        <option value="03">Mar</option>
+                        <option value="04">Abr</option>
+                        <option value="05">Mai</option>
+                        <option value="06">Jun</option>
+                        <option value="07">Jul</option>
+                        <option value="08">Ago</option>
+                        <option value="09">Set</option>
+                        <option value="10">Out</option>
+                        <option value="11">Nov</option>
+                        <option value="12">Dez</option>
+                    </select>
+                    <span class="text-[10px] text-gray-500">/</span>
+                    <select name="ofx-year" id="ofx-year" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                        <option value="2026">2026</option>
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                    </select>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-[10px] text-gray-600">Saldo Final:</span>
+                    <input id="ofx-given-balance" type="text" value="0,00" oninput="mascaraMoeda(this)" class="w-24 border border-gray-400 bg-white px-2 py-1 text-xs font-mono text-right">
+                </div>
+            </fieldset>
+            
+            <div class="flex gap-2 items-center mb-2">
+                <button class="px-3 py-1 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="OFXImporter.selectFile()">Selecionar Arquivo...</button>
+                <span id="ofx-file-name" class="text-[10px] text-gray-500 flex-1 truncate">Nenhum arquivo selecionado</span>
+                <button class="px-3 py-1 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 cursor-pointer text-xs text-yellow-800" onclick="importWithoutOFX()">Sem Movimentação</button>
+            </div>
+            
+            <table class="w-full text-center border border-gray-400 border-collapse text-xs mb-3">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="border border-gray-400 px-2 py-1">Período</th>
+                        <th class="border border-gray-400 px-2 py-1">Data</th>
+                        <th class="border border-gray-400 px-2 py-1">Arquivo</th>
+                        <th class="border border-gray-400 px-2 py-1">Saldo Final</th>
+                        <th class="border border-gray-400 px-2 py-1 w-8"></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white"></tbody>
+            </table>
+            
+            <div class="flex justify-end gap-2 pt-2 border-t border-gray-300">
+                <button class="px-3 py-1 border border-gray-400 bg-gray-100 hover:bg-gray-200 cursor-pointer text-xs" onclick="document.getElementById('importofx-modal').close()">Cancelar</button>
+                <button class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="import_ofx()">Importar</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog id="newbank-modal" class="dialog-base">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Contas Bancárias</span>
+            <button onclick="document.getElementById('newbank-modal').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 w-[450px]">
+            <div class="mb-3">
+                <span class="text-[10px] text-gray-600">Contas Cadastradas:</span>
+                <select id="bank-accounts" class="w-full border border-gray-400 bg-gray-200 px-2 py-1 text-xs mt-1" disabled></select>
+            </div>
+            
+            <fieldset class="border border-gray-400 p-2 mb-3">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Dados da Conta</legend>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Código do Banco: *</span>
+                        <input type="text" id="newbank-code" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off" oninput="mascaraNumero(this)">
+                    </label>
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Nome do Banco: *</span>
+                        <input type="text" id="newbank-name" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off">
+                    </label>
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Nº da Conta (sem dígito):</span>
+                        <input type="text" id="newbank-account" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off" oninput="mascaraNumero(this)">
+                    </label>
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Competência Inicial:</span>
+                        <input type="text" id="newbank-startDate" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off" placeholder="MM/AAAA" maxlength="7">
+                    </label>
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Saldo Inicial:</span>
+                        <input type="text" id="newbank-startBalance" class="border border-gray-400 bg-white px-2 py-1 text-xs font-mono" autocomplete="off" oninput="mascaraMoeda(this)">
+                    </label>
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Código Contábil:</span>
+                        <input type="text" id="newbank-accountCode" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off" oninput="mascaraNumero(this)">
+                    </label>
+                </div>
+            </fieldset>
+            
+            <div class="flex justify-end gap-2 pt-2 border-t border-gray-300">
+                <button class="px-3 py-1 border border-gray-400 bg-gray-100 hover:bg-gray-200 cursor-pointer text-xs" onclick="document.getElementById('newbank-modal').close()">Cancelar</button>
+                <button class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="save_newbank()">Salvar</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog id="chartOfAccounts-modal" class="dialog-base">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Plano de Contas</span>
+            <button onclick="document.getElementById('chartOfAccounts-modal').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 w-[650px]">
+            <div class="flex gap-2 items-center mb-3 pb-2 border-b border-gray-300">
+                <input type="text" id="search-chart-accounts" class="flex-1 border border-gray-400 bg-white px-2 py-1 text-xs" placeholder="Pesquisar por código ou descrição..." oninput="ChartOfAccountsManager.filter(this.value)">
+                <button class="px-2 py-1 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-[10px]" onclick="import_chartOfAccountCSV()">Importar CSV</button>
+            </div>
+            
+            <fieldset class="border border-gray-400 p-2 mb-3">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Contas Cadastradas (<span id="chart-accounts-count">0</span>)</legend>
+                <div class="max-h-[300px] overflow-y-auto border border-gray-300">
+                    <table class="w-full text-xs border-collapse">
+                        <thead class="bg-gray-200 sticky top-0">
+                            <tr>
+                                <th class="border-b border-gray-400 px-2 py-1 text-left font-semibold w-24">Código</th>
+                                <th class="border-b border-gray-400 px-2 py-1 text-left font-semibold">Descrição</th>
+                                <th class="border-b border-gray-400 px-2 py-1 w-16"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="chart-of-accounts" class="bg-white"></tbody>
+                    </table>
+                </div>
+            </fieldset>
+            
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Nova Conta</legend>
+                <div class="flex gap-2 items-end">
+                    <label class="flex flex-col gap-0.5 w-24">
+                        <span class="text-[10px] text-gray-600">Código:</span>
+                        <input type="text" id="new-account-code" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off" oninput="mascaraNumero(this)">
+                    </label>
+                    <label class="flex flex-col gap-0.5 flex-1">
+                        <span class="text-[10px] text-gray-600">Descrição:</span>
+                        <input type="text" id="new-account-description" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off">
+                    </label>
+                    <button class="px-3 py-1 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="ChartOfAccountsManager.addNew()">+ Adicionar</button>
+                </div>
+            </fieldset>
+        </div>
+    </dialog>
+    <!-- Modal de edição -->
+    <dialog id="edit-modal" class="dialog-base p-0 w-[550px] bg-gray-100 border-2 border-gray-500 shadow-lg">
+        <!-- Header -->
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span id="edit-panel-title">Editar Movimentação</span>
+            <button onclick="closeEditPanel()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        
+        <!-- Conteúdo - Edição única -->
+        <div id="edit-single-content" class="p-3 flex flex-col gap-3">
+            <span id="edit-transaction-id" class="hidden"></span>
+            
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Dados da Movimentação</legend>
+                <div class="flex gap-2 mb-2">
+                    <label class="flex-1 flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Data</span>
+                        <input type="date" id="edit-date" class="text-center border border-gray-400 bg-gray-200 px-2 py-1 text-xs" readonly>
+                    </label>
+                    <label class="flex-1 flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Valor</span>
+                        <input type="text" id="edit-valor" data-transaction="valor" class="text-right border border-gray-400 bg-white px-2 py-1 text-xs font-mono" oninput="mascaraMoeda(this)">
+                    </label>
+                </div>
+                
+                <label class="flex flex-col gap-0.5">
+                    <span class="text-[10px] text-gray-600">Histórico Bancário</span>
+                    <input type="text" id="edit-historico" data-transaction="historico" class="border border-gray-400 bg-white px-2 py-1 text-xs w-full">
+                </label>
+            </fieldset>
+            
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Classificação</legend>
+                <label class="flex flex-col gap-0.5 mb-2">
+                    <span class="text-[10px] text-gray-600">Situação</span>
+                    <select id="edit-situacao" data-transaction="situacao" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                        <option value="PENDENTE">PENDENTE</option>
+                        <option value="CONFIRMADO">CONFIRMADO</option>
+                        <option value="CANCELADO">CANCELADO</option>
+                    </select>
+                </label>
+                
+                <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-gray-600">Contra Partida</span>
+                        <span class="ml-hint hidden text-[10px] text-blue-600 italic">[ Sugestão ML ]</span>
+                    </div>
+                    <button onclick="toggleChartOfAccountsDropdown()" id="edit-conta" class="selectInChartOfAccount cursor-pointer w-full text-left px-2 py-1 border border-gray-400 bg-white hover:bg-blue-50 text-xs truncate">
+                        Selecione uma conta
+                    </button>
+                    
+                    <!-- Dropdown de contas inline -->
+                    <div id="chartOfAccounts-dropdown" class="hidden mt-1 border border-gray-400 bg-white">
+                        <input type="text" id="chart-filter" class="w-full border-b border-gray-300 px-2 py-1 text-xs" placeholder="Buscar conta..." oninput="filterChartOfAccounts()">
+                        <ul id="chartOfAccounts-options" class="list-none p-0 max-h-[150px] overflow-y-auto text-xs"></ul>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        
+        <!-- Conteúdo - Edição múltipla -->
+        <div id="edit-multiple-content" class="hidden p-3 flex flex-col gap-3">
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Classificação em Lote</legend>
+                <label class="flex flex-col gap-0.5 mb-2">
+                    <span class="text-[10px] text-gray-600">Situação</span>
+                    <select id="edit-multi-situacao" data-transaction="situacao" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                        <option value="PENDENTE">PENDENTE</option>
+                        <option value="CONFIRMADO">CONFIRMADO</option>
+                        <option value="CANCELADO">CANCELADO</option>
+                    </select>
+                </label>
+                
+                <div class="flex flex-col gap-0.5">
+                    <span class="text-[10px] text-gray-600">Contra Partida</span>
+                    <button onclick="toggleChartOfAccountsDropdown('multi')" id="edit-multi-conta" class="selectInChartOfAccount cursor-pointer w-full text-left px-2 py-1 border border-gray-400 bg-white hover:bg-blue-50 text-xs truncate">
+                        Selecione uma conta
+                    </button>
+                    
+                    <!-- Dropdown de contas inline para edição múltipla -->
+                    <div id="chartOfAccounts-dropdown-multi" class="hidden mt-1 border border-gray-400 bg-white">
+                        <input type="text" id="chart-filter-multi" class="w-full border-b border-gray-300 px-2 py-1 text-xs" placeholder="Buscar conta..." oninput="filterChartOfAccounts('multi')">
+                        <ul id="chartOfAccounts-options-multi" class="list-none p-0 max-h-[150px] overflow-y-auto text-xs"></ul>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        
+        <!-- Footer com botões -->
+        <div class="p-2 border-t border-gray-400 bg-gray-200 flex gap-2">
+            <button id="edit-disfragment-btn" class="hidden px-3 py-1 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 cursor-pointer text-xs text-yellow-700" onclick="disfragmentFromModal()">
+                Desfragmentar
+            </button>
+            <div class="flex-1"></div>
+            <button class="px-3 py-1 border border-gray-400 bg-gray-100 hover:bg-gray-200 cursor-pointer text-xs" onclick="closeEditPanel()">
+                Cancelar
+            </button>
+            <button id="edit-confirm-btn" class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="confirmEdit()">
+                Confirmar
+            </button>
+        </div>
+    </dialog>
+    <!-- Modal de fragmentação -->
+    <dialog id="fragment-modal" class="dialog-base p-0 w-[550px] bg-gray-100 border-2 border-gray-500 shadow-lg">
+        <!-- Header -->
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Fragmentar Movimentação</span>
+            <button onclick="closeFragmentPanel()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-3 flex flex-col gap-3">
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Movimentação Original</legend>
+                <div class="flex border border-gray-300 bg-gray-200">
+                    <input type="text" class="w-[25%] text-center border-0 outline-none bg-transparent py-1 text-xs" disabled name="date">
+                    <input type="text" class="w-[50%] border-0 outline-none bg-transparent py-1 text-xs border-l border-r border-gray-300" disabled name="description">
+                    <input type="text" class="w-[25%] text-center border-0 outline-none bg-transparent py-1 text-xs font-mono" disabled name="amount">
+                </div>
+            </fieldset>
+            
+            <p class="text-[10px] text-gray-600 bg-yellow-50 border border-yellow-300 p-2">A fragmentação cancela a movimentação original e cria novas, limitadas ao valor da original.</p>
+            
+            <div class="flex justify-between items-center">
+                <span id="total-fragmented" class="text-xs text-gray-700 font-semibold">Total Fragmentado: 0,00</span>
+                <button class="px-2 py-1 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="include_fragment()">+ Adicionar</button>
+            </div>
+            
+            <ul id="fragment-list" class="list-none p-0 overflow-y-auto border border-gray-400 bg-white min-h-[120px] max-h-[200px]"></ul>
+        </div>
+        
+        <!-- Footer com botões -->
+        <div class="p-2 border-t border-gray-400 bg-gray-200 flex gap-2">
+            <button class="flex-1 px-3 py-1 border border-gray-400 bg-gray-100 hover:bg-gray-200 cursor-pointer text-xs" onclick="closeFragmentPanel()">
+                Cancelar
+            </button>
+            <button class="flex-1 px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="save_fragment()">
+                Fragmentar
+            </button>
+        </div>
+    </dialog>
+    <dialog id="automatic-classification" class="dialog-base">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Classificação Automática</span>
+            <button onclick="document.getElementById('automatic-classification').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 w-[700px]">
+            <div class="flex items-center gap-2 mb-3 pb-2 border-b border-gray-300">
+                <span class="text-[10px] text-gray-600">Executar no mês:</span>
+                <select id="execution-month" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                    <option value="01">Jan</option>
+                    <option value="02">Fev</option>
+                    <option value="03">Mar</option>
+                    <option value="04">Abr</option>
+                    <option value="05">Mai</option>
+                    <option value="06">Jun</option>
+                    <option value="07">Jul</option>
+                    <option value="08">Ago</option>
+                    <option value="09">Set</option>
+                    <option value="10">Out</option>
+                    <option value="11">Nov</option>
+                    <option value="12">Dez</option>
+                </select>
+                <button class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="execute_automatic_association('manual')">Executar</button>
+            </div>
+            
+            <fieldset class="border border-gray-400 p-2 mb-3">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Regras Cadastradas</legend>
+                <div class="max-h-[250px] overflow-y-auto border border-gray-300">
+                    <table class="w-full text-xs border-collapse">
+                        <thead class="bg-gray-200 sticky top-0">
+                            <tr>
+                                <th class="border-b border-gray-400 px-2 py-1 text-left font-semibold">Quando encontrar</th>
+                                <th class="border-b border-gray-400 px-2 py-1 text-left font-semibold">Classificar como</th>
+                                <th class="border-b border-gray-400 px-2 py-1 w-8"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="listOfClassificationSaved" class="bg-white"></tbody>
+                    </table>
+                </div>
+            </fieldset>
+            
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Nova Regra</legend>
+                <div class="flex gap-2 items-end">
+                    <label class="flex flex-col gap-0.5 flex-1">
+                        <span class="text-[10px] text-gray-600">Quando encontrar:</span>
+                        <input type="text" id="whenFindThis" class="border border-gray-400 bg-white px-2 py-1 text-xs" autocomplete="off">
+                    </label>
+                    <label class="flex flex-col gap-0.5 flex-1">
+                        <span class="text-[10px] text-gray-600">Classificar como:</span>
+                        <select id="classifyAs" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                            <option value="">Selecione uma conta</option>
+                        </select>
+                    </label>
+                    <button class="px-3 py-1 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="associate_description()">+ Adicionar</button>
+                </div>
+            </fieldset>
+        </div>
+    </dialog>
+    <dialog id="csvExport" class="dialog-base">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Exportar CSV</span>
+            <button onclick="document.getElementById('csvExport').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 w-[350px]">
+            <fieldset class="border border-gray-400 p-2 mb-3">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Configurações</legend>
+                <label class="flex flex-col gap-0.5 mb-2">
+                    <span class="text-[10px] text-gray-600">Banco:</span>
+                    <select id="csv-bank" class="border border-gray-400 bg-white px-2 py-1 text-xs"></select>
+                </label>
+                <div class="flex gap-2">
+                    <label class="flex-1 flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Mês:</span>
+                        <select id="csv-month" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                            <option value="01">Janeiro</option>
+                            <option value="02">Fevereiro</option>
+                            <option value="03">Março</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Maio</option>
+                            <option value="06">Junho</option>
+                            <option value="07">Julho</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                    </label>
+                    <label class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Ano:</span>
+                        <select id="csv-year" class="border border-gray-400 bg-white px-2 py-1 text-xs">
+                            <option value="2026">2026</option>
+                            <option value="2025" selected>2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+            
+            <p class="text-[10px] text-gray-600 bg-yellow-50 border border-yellow-300 p-2 mb-3">O arquivo só será gerado quando todo o mês escolhido estiver CONFIRMADO.</p>
+            
+            <div class="flex justify-end">
+                <button class="px-3 py-1 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="exportToCSV()">Gerar CSV</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Modal do Painel ML -->
+    <dialog id="ml-panel" class="dialog-base p-0 w-[650px] bg-gray-100 border-2 border-gray-500 shadow-lg">
+        <div class="h-7 bg-gray-700 text-white text-xs font-semibold flex items-center px-2 justify-between">
+            <span>Painel Machine Learning</span>
+            <button onclick="document.getElementById('ml-panel').close()" class="text-white hover:text-gray-300 px-1">✕</button>
+        </div>
+        <div class="p-3 flex flex-col gap-3">
+            <!-- Estatísticas -->
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Estatísticas do Modelo</legend>
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <div class="bg-white border border-gray-300 p-2">
+                        <div id="ml-stat-categories" class="text-lg font-bold text-gray-700">0</div>
+                        <div class="text-[10px] text-gray-500">Categorias</div>
+                    </div>
+                    <div class="bg-white border border-gray-300 p-2">
+                        <div id="ml-stat-documents" class="text-lg font-bold text-gray-700">0</div>
+                        <div class="text-[10px] text-gray-500">Documentos</div>
+                    </div>
+                    <div class="bg-white border border-gray-300 p-2">
+                        <div id="ml-stat-vocabulary" class="text-lg font-bold text-gray-700">0</div>
+                        <div class="text-[10px] text-gray-500">Vocabulário</div>
+                    </div>
+                    <div class="bg-white border border-gray-300 p-2">
+                        <div id="ml-stat-threshold" class="text-lg font-bold text-gray-700">40%</div>
+                        <div class="text-[10px] text-gray-500">Threshold</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-[10px] text-gray-500 flex items-center justify-between">
+                    <div class="flex items-center gap-1">
+                        <span>Último treinamento:</span>
+                        <span id="ml-last-train" class="font-semibold text-gray-700">Nunca</span>
+                    </div>
+                    <div id="ml-overfitting-indicator" class="flex items-center gap-1 px-2 py-0.5 border rounded">
+                        <span class="text-[10px]">Saúde do modelo:</span>
+                        <span id="ml-overfitting-status" class="font-semibold text-[10px]">-</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Configurações -->
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Configurações</legend>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2">
+                        <span class="text-[10px] text-gray-600">Threshold de Confiança:</span>
+                        <input type="range" id="ml-threshold-slider" min="10" max="90" value="40" class="w-32" oninput="updateMLThreshold(this.value)">
+                        <span id="ml-threshold-value" class="text-xs font-mono w-10">40%</span>
+                    </label>
+                    <span class="text-[10px] text-gray-400 italic">(menor = mais sugestões, maior = mais precisão)</span>
+                </div>
+            </fieldset>
+
+            <!-- Testar Classificação -->
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Testar Classificação</legend>
+                <div class="flex gap-2 items-end">
+                    <label class="flex-1 flex flex-col gap-0.5">
+                        <span class="text-[10px] text-gray-600">Descrição da transação:</span>
+                        <input type="text" id="ml-test-input" class="border border-gray-400 bg-white px-2 py-1 text-xs" placeholder="Digite uma descrição para testar...">
+                    </label>
+                    <button class="px-3 py-1 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="testMLClassification()">Testar</button>
+                </div>
+                <div id="ml-test-result" class="mt-2 p-2 bg-white border border-gray-300 text-xs hidden">
+                    <span class="text-gray-500">Resultado:</span>
+                    <span id="ml-test-result-text" class="font-semibold"></span>
+                </div>
+            </fieldset>
+
+            <!-- Lista de Categorias -->
+            <fieldset class="border border-gray-400 p-2">
+                <legend class="text-[10px] text-gray-600 font-semibold px-1">Categorias Treinadas</legend>
+                <div class="max-h-[150px] overflow-y-auto border border-gray-300">
+                    <table class="w-full text-xs border-collapse">
+                        <thead class="bg-gray-200 sticky top-0">
+                            <tr>
+                                <th class="border-b border-gray-400 px-2 py-1 text-left font-semibold">Categoria</th>
+                                <th class="border-b border-gray-400 px-2 py-1 text-center font-semibold w-24">Documentos</th>
+                                <th class="border-b border-gray-400 px-2 py-1 text-center font-semibold w-24">Palavras</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ml-categories-list" class="bg-white"></tbody>
+                    </table>
+                </div>
+            </fieldset>
+
+            <!-- Ações -->
+            <div class="flex gap-2">
+                <button class="flex-1 px-3 py-1.5 border border-gray-500 bg-gray-300 hover:bg-gray-400 cursor-pointer text-xs font-semibold" onclick="trainMLFromPanel()">
+                    Treinar ML
+                </button>
+                <button class="flex-1 px-3 py-1.5 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="optimizeML()">
+                    Otimizar ML
+                </button>
+                <button class="flex-1 px-3 py-1.5 border border-gray-400 bg-gray-200 hover:bg-gray-300 cursor-pointer text-xs" onclick="resetMLFromPanel()">
+                    Resetar ML
+                </button>
+                <button class="px-3 py-1.5 border border-gray-400 bg-gray-100 hover:bg-gray-200 cursor-pointer text-xs" onclick="document.getElementById('ml-panel').close()">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <input type="file" id="json-input" style="display: none;" accept=".json">
+    <input type="file" id="ofx-input" style="display: none;" accept=".ofx" onchange="OFXImporter.onFileSelected()">
+    <input type="file" id="ofx-multiple-input" style="display: none;" accept=".ofx" multiple>
+    <input type="file" id="csv-input" style="display: none;" accept=".csv">
+
+    <!-- Templates -->
+    <template id="template-transaction">
+        <li class="transaction-row transactions-grid items-center cursor-pointer hover:bg-blue-100 text-xs relative" ondblclick="TransactionManager.openEditModal(this)">
+            <span class="h-full flex items-center justify-center border-r border-gray-200">
+                <input type="checkbox" class="cursor-pointer" onclick="event.stopPropagation()">
+            </span>
+            <span data-field="date" class="h-full flex items-center px-2 border-r border-gray-200 text-gray-700 font-mono"></span>
+            <span data-field="bank" class="h-full flex items-center px-2 border-r border-gray-200 truncate"></span>
+            <span data-field="description" class="h-full flex items-center px-2 border-r border-gray-200 truncate"></span>
+            <span data-field="value" class="h-full flex items-center justify-end px-2 border-r border-gray-200 font-mono font-medium"></span>
+            <span data-field="status" class="h-full flex items-center justify-center px-2 border-r border-gray-200 font-medium"></span>
+            <span data-field="classification" data-code="" class="h-full flex items-center px-2 truncate text-gray-600"></span>
+        </li>
+    </template>
+
+    <template id="template-transaction-canceled">
+        <li class="transaction-row transactions-grid items-center cursor-pointer hover:bg-gray-200 text-xs opacity-60 relative" ondblclick="TransactionManager.openEditModal(this)">
+            <span class="h-full flex items-center justify-center border-r border-gray-200">
+                <input type="checkbox" class="cursor-pointer" onclick="event.stopPropagation()">
+            </span>
+            <span data-field="date" class="h-full flex items-center px-2 border-r border-gray-200 text-gray-500 font-mono"><s></s></span>
+            <span data-field="bank" class="h-full flex items-center px-2 border-r border-gray-200 truncate"><s></s></span>
+            <span data-field="description" class="h-full flex items-center px-2 border-r border-gray-200 truncate"><s></s></span>
+            <span data-field="value" class="h-full flex items-center justify-end px-2 border-r border-gray-200 font-mono"><s></s></span>
+            <span data-field="status" class="h-full flex items-center justify-center px-2 border-r border-gray-200 font-medium"></span>
+            <span data-field="classification" data-code="" class="h-full flex items-center px-2 truncate text-gray-500"></span>
+        </li>
+    </template>
+
+    <template id="template-fragment-icon">
+        <svg onclick="FragmentManager.disfragment(this.closest('li').id)" 
+            name="fragment-icon" xmlns="http://www.w3.org/2000/svg" 
+            height="24px" viewBox="0 -960 960 960" width="24px" fill="#084D6E" 
+            class="absolute right-0 pr-2.5 cursor-pointer"
+            title="Desfragmentar">
+            <title>Desfragmentar</title>
+            <path d="M480-400 40-640l440-240 440 240-440 240Zm0 160L63-467l84-46 333 182 333-182 84 46-417 227Zm0 160L63-307l84-46 333 182 333-182 84 46L480-80Zm0-411 273-149-273-149-273 149 273 149Zm0-149Z"/>
+        </svg>
+    </template>
+
+
+    <template id="template-fragment-item">
+        <li class="flex gap-1 p-1 border-b border-gray-300 items-center bg-white hover:bg-blue-50">
+            <input type="text" placeholder="Descrição" class="flex-1 border border-gray-400 px-2 py-1 text-xs">
+            <input type="text" placeholder="Valor" class="w-24 border border-gray-400 px-2 py-1 text-xs font-mono text-right" onkeyup="mascaraMoeda(this); FragmentManager.updateTotal();">
+            <button class="px-1 py-0.5 bg-red-100 hover:bg-red-200 border border-red-300 cursor-pointer text-red-700 text-[10px]" onclick="FragmentManager.removeFragment(this)">
+                ✕
+            </button>
+        </li>
+    </template>
+
+
+    <template id="template-chart-option">
+        <li class="px-2 py-1 cursor-pointer hover:bg-blue-100 border-b border-gray-200 text-xs"></li>
+    </template>
+
+    <template id="template-bank-option">
+        <option></option>
+    </template>
+
+    <template id="template-bank-filter-option">
+        <option></option>
+    </template>
+
+    <script src="naive-bayes.js"></script>
+    <script src="js/Utils.js"></script>
+    <script src="js/NotificationManager.js"></script>
+    <script src="js/StorageManager.js"></script>
+    <script src="js/BankManager.js"></script>
+    <script src="js/ChartOfAccountsManager.js"></script>
+    <script src="js/TransactionManager.js"></script>
+    <script src="js/FragmentManager.js"></script>
+    <script src="js/OFXImporter.js"></script>
+    <script src="js/CSVExporter.js"></script>
+    <script src="js/JSONManager.js"></script>
+    <script src="js/AutoClassifier.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

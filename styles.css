@@ -1,0 +1,224 @@
+/* Status colors for month indicators */
+.greenStatus {
+    background-color: #90EE90;
+}
+.yellowStatus {
+    background-color: #FDE55D;
+}
+.redStatus {
+    background-color: #FA697A;
+}
+
+/* Grid template for transactions */
+.transactions-grid {
+    display: grid;
+    grid-template-columns: 32px 90px 150px 1fr 100px 100px 280px;
+}
+
+.transactions-header {
+    height: 28px;
+}
+
+/* Transaction rows */
+.transaction-row {
+    height: 26px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Zebra striping */
+.transaction-row:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.transaction-row:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+/* Status colors in table */
+.transaction-row [data-field="status"] {
+    font-size: 10px;
+}
+
+/* Selected row */
+.transaction-row:has(input:checked) {
+    background-color: #dbeafe !important;
+}
+
+/* Dialog base styles - System style */
+.dialog-base {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid #6b7280;
+    border-radius: 0;
+    padding: 0;
+    background: #f3f4f6;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+    margin: 0;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.dialog-base::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* System Message Box */
+/* Container para notificação e confirmação (sem overlay escuro) */
+.sys-msgbox-container {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2147483647;
+    pointer-events: none;
+}
+
+.sys-msgbox-container .sys-msgbox {
+    pointer-events: auto;
+}
+
+.sys-msgbox {
+    background: #f3f4f6;
+    border: 2px solid #6b7280;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+    font-size: 11px;
+    min-width: 280px;
+    max-width: 380px;
+}
+
+.sys-msgbox-title {
+    background: #374151;
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sys-msgbox-close {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.sys-msgbox-close:hover {
+    color: white;
+}
+
+.sys-msgbox-body {
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.sys-msgbox-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
+}
+
+.sys-msgbox-icon-info {
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 2px solid #6366f1;
+}
+
+.sys-msgbox-icon-success {
+    background: #dcfce7;
+    color: #166534;
+    border: 2px solid #22c55e;
+}
+
+.sys-msgbox-icon-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 2px solid #f59e0b;
+    border-radius: 4px;
+}
+
+.sys-msgbox-icon-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 2px solid #ef4444;
+}
+
+.sys-msgbox-icon-loading {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e5e7eb;
+    border-top: 3px solid #374151;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    background: transparent;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.sys-msgbox-text {
+    flex: 1;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.sys-msgbox-buttons {
+    padding: 0 16px 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.sys-msgbox-btn {
+    background: #e5e7eb;
+    border: 1px solid #9ca3af;
+    padding: 4px 16px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.sys-msgbox-btn:hover {
+    background: #d1d5db;
+}
+
+.sys-msgbox-btn-primary {
+    background: #374151;
+    color: white;
+    border-color: #374151;
+}
+
+.sys-msgbox-btn-primary:hover {
+    background: #4b5563;
+}
+
+/* Chart option hover state */
+.chart-option:hover {
+    background-color: #f3f4f6;
+}
+
+/* Fragmento - borda lateral azul */
+.fragment-row {
+    box-shadow: inset 3px 0 0 #3b82f6;
+    background-color: #eff6ff;
+}
+
+.fragment-row:hover {
+    background-color: #dbeafe !important;
+}
