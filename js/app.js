@@ -139,6 +139,9 @@ function openImportOFXModal() {
     const banks = StorageManager.getBanks();
     const bankSelect = document.getElementById('ofx-bank');
     const tbody = document.querySelector('#importofx-modal table tbody');
+    const monthSelect = document.getElementById('ofx-month');
+    const yearSelect = document.getElementById('ofx-year');
+    const balanceInput = document.getElementById('ofx-given-balance');
     
     bankSelect.innerHTML = '<option value="0">Selecione um banco</option>';
     banks.forEach(bank => {
@@ -148,11 +151,33 @@ function openImportOFXModal() {
         bankSelect.appendChild(option);
     });
     
+    // Selecionar o primeiro banco automaticamente
+    if (banks.length > 0) {
+        bankSelect.value = banks[0].cc;
+    }
+    
+    // Setar período atual (mês e ano)
+    const now = new Date();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+    const currentYear = String(now.getFullYear());
+    
+    if (monthSelect) {
+        monthSelect.value = currentMonth;
+    }
+    if (yearSelect) {
+        yearSelect.value = currentYear;
+    }
+    
+    // Setar saldo final como 0
+    if (balanceInput) {
+        balanceInput.value = '0,00';
+    }
+    
     // Atualizar tabela quando selecionar banco
     bankSelect.onchange = () => updateOFXImportedTable();
     
-    // Limpar tabela inicial
-    tbody.innerHTML = '';
+    // Atualizar tabela inicial com o primeiro banco
+    updateOFXImportedTable();
     
     modal.showModal();
 }
