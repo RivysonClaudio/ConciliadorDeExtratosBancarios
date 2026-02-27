@@ -125,6 +125,12 @@ class TransactionManager {
                     incomesEl.value = Utils.formatBRL(incomesTotal);
                     outcomesEl.value = Utils.formatBRL(outcomesTotal);
                     
+                    // Reset seleção e checkbox geral ao recarregar a tabela
+                    const checkAll = document.getElementById('checkAll-transactions');
+                    if (checkAll) checkAll.checked = false;
+                    const selectedTotalEl = document.getElementById('selected-total');
+                    if (selectedTotalEl) selectedTotalEl.value = Utils.formatBRL(0);
+                    
                     resolve(document.getElementById('numberOfTransactions').value = totalFiltered);
                     this.updateFinalBalance();
                     setTimeout(() => { document.getElementById('transactionsLoading').style.width = `0%` }, 100);
@@ -150,6 +156,31 @@ class TransactionManager {
         const checkbox = li.querySelector('input[type="checkbox"]');
         checkbox.name = `check-${t.id}`;
         checkbox.id = `check-${t.id}`;
+        checkbox.addEventListener('change', () => {
+            this.updateSelectedTotal();
+
+            // Atualizar estado do checkbox geral
+            const master = document.getElementById('checkAll-transactions');
+            if (master) {
+                const rows = document.getElementById('transactions-list').querySelectorAll('li');
+                let allChecked = true;
+                let anyVisible = false;
+
+                rows.forEach(row => {
+                    if (row.style.display === '') {
+                        const cb = row.querySelector('input[type="checkbox"]');
+                        if (cb) {
+                            anyVisible = true;
+                            if (!cb.checked) {
+                                allChecked = false;
+                            }
+                        }
+                    }
+                });
+
+                master.checked = anyVisible && allChecked;
+            }
+        });
         
         if (t.status === "CANCELADO") {
             li.querySelector('[data-field="date"] s').textContent = Utils.formatDateTime(t.date);
@@ -180,6 +211,7 @@ class TransactionManager {
             if (e.ctrlKey) {
                 e.preventDefault();
                 checkbox.checked = !checkbox.checked;
+                this.updateSelectedTotal();
             }
         });
         
@@ -476,6 +508,33 @@ class TransactionManager {
         endBalance.value = Utils.formatBRL(startBalanceFloat + incomesFloat - outcomesFloat);
     }
 
+    static updateSelectedTotal() {
+        const selectedTotalEl = document.getElementById('selected-total');
+        if (!selectedTotalEl) return;
+
+        const transactions = StorageManager.getTransactions();
+        const map = new Map(transactions.map(t => [t.id, t]));
+
+        let total = 0;
+        const selectedLis = document
+            .getElementById('transactions-list')
+            .querySelectorAll('li');
+
+        selectedLis.forEach(li => {
+            const checkbox = li.querySelector('input[type="checkbox"]');
+            if (!checkbox || !checkbox.checked) return;
+            if (li.style.display !== '') return;
+
+            const t = map.get(li.id);
+            if (!t) return;
+
+            const amount = Utils.parseAmount(t.amount);
+            total += amount;
+        });
+
+        selectedTotalEl.value = Utils.formatBRL(total);
+    }
+
     static updateStatus() {
         const statusList = Array.from(document.querySelectorAll('[data-month-status]'));
         const banks = StorageManager.getBanks();
@@ -598,6 +657,8 @@ class TransactionManager {
                 }
             }
         });
+
+        this.updateSelectedTotal();
     }
 }
 
