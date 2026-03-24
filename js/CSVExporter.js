@@ -22,6 +22,12 @@ class CSVExporter {
       option.disabled = true;
       bankSelect.appendChild(option);
     } else {
+      const allOption = document.createElement("option");
+      allOption.value = "0";
+      allOption.textContent = "Todos os bancos";
+      allOption.selected = true;
+      bankSelect.appendChild(allOption);
+
       banks.forEach((bank) => {
         const option = document.createElement("option");
         option.value = bank.cc;
@@ -35,7 +41,8 @@ class CSVExporter {
 
   static export() {
     const bankCC = document.getElementById("csv-bank").value;
-    const month = document.getElementById("csv-month").value;
+    const monthStart = document.getElementById("csv-month-start").value;
+    const monthEnd = document.getElementById("csv-month-end").value;
     const year = document.getElementById("csv-year").value;
 
     if (!bankCC) {
@@ -43,22 +50,30 @@ class CSVExporter {
       return;
     }
 
-    const period = year + month;
+    if (monthStart > monthEnd) {
+      showNotification("Mês inicial deve ser menor ou igual ao mês final", "warning");
+      return;
+    }
+
+    const initialPeriod = year + monthStart;
+    const finalPeriod = year + monthEnd;
     const transactions = StorageManager.getTransactions();
     const banks = StorageManager.getBanks();
     const header_info = StorageManager.getHeaderInfo();
 
+    const allBanksSelected = bankCC === "0";
     const periodTransactions = transactions.filter(
       (t) =>
-        (t.cc.includes(bankCC) || bankCC.includes(t.cc)) &&
-        t.period == period &&
+        (allBanksSelected || t.cc.includes(bankCC) || bankCC.includes(t.cc)) &&
+        initialPeriod <= String(t.period) &&
+        String(t.period) <= finalPeriod &&
         t.status !== "CANCELADO" &&
         t.status !== "FRAGMENTADO",
     );
 
     if (periodTransactions.length === 0) {
       showNotification(
-        "Nenhuma movimentação encontrada para o período selecionado",
+        "Nenhuma movimentação encontrada para o intervalo selecionado",
         "warning",
       );
       return;
@@ -70,7 +85,7 @@ class CSVExporter {
 
     if (pendingTransactions.length > 0) {
       showNotification(
-        `Existem ${pendingTransactions.length} transações PENDENTES no período. Confirme todas antes de exportar.`,
+        `Existem ${pendingTransactions.length} transações PENDENTES no intervalo selecionado. Confirme todas antes de exportar.`,
         "warning",
       );
       return;
@@ -85,10 +100,9 @@ class CSVExporter {
       (a, b) => Number(a.date.slice(0, 8)) - Number(b.date.slice(0, 8)),
     );
 
-    const bankInfo = banks.find(
-      (b) => bankCC.includes(b.cc) || b.cc.includes(bankCC),
-    );
-    const bankAccount = bankInfo ? bankInfo.jounal_account : "";
+    const bankInfo = allBanksSelected
+      ? null
+      : banks.find((b) => bankCC.includes(b.cc) || b.cc.includes(bankCC));
 
     let csvContent =
       "DATA;DEBITO;CREDITO;VALOR;ESTRUTURA HISTORICO;HISTORICO\n";
@@ -102,6 +116,11 @@ class CSVExporter {
         ? t.classification.split(" - ")[0]
         : "";
       const isDebit = t.amount.toString().startsWith("-");
+
+      const transactionBank = banks.find(
+        (b) => t.cc && (t.cc.includes(b.cc) || b.cc.includes(t.cc)),
+      );
+      const bankAccount = transactionBank ? transactionBank.jounal_account : "";
 
       const debitAccount = isDebit ? classificationCode : bankAccount;
       const creditAccount = isDebit ? bankAccount : classificationCode;
@@ -129,8 +148,8 @@ class CSVExporter {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
 
-    const bankName = bankInfo ? bankInfo.name : "banco";
-    const fileName = `conciliacao_${header_info.razao || "empresa"}_${bankName}_${period}.csv`;
+    const bankName = allBanksSelected ? "todos_bancos" : bankInfo ? bankInfo.name : "banco";
+    const fileName = `conciliacao_${header_info.razao || "empresa"}_${bankName}_${initialPeriod}_${finalPeriod}.csv`;
 
     link.setAttribute("href", url);
     link.setAttribute("download", fileName);
