@@ -363,6 +363,19 @@
                 <button class="px-3 py-1 border border-yellow-500 bg-yellow-100 hover:bg-yellow-200 cursor-pointer text-xs text-yellow-800" onclick="importWithoutOFX()">Sem Movimentação</button>
             </div>
             
+            <div class="flex gap-2 items-center mb-2">
+                <span class="text-[10px] text-gray-600">Arquivos importados:</span>
+                <select id="ofx-table-year" class="border border-gray-400 bg-white px-2 py-1 text-xs" onchange="updateOFXImportedTable()">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                </select>
+            </div>
+            
             <table class="w-full text-center border border-gray-400 border-collapse text-xs mb-3">
                 <thead class="bg-gray-200">
                     <tr>

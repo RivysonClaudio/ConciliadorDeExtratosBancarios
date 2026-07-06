@@ -256,6 +256,7 @@ function openImportOFXModal() {
     const tbody = document.querySelector('#importofx-modal table tbody');
     const monthSelect = document.getElementById('ofx-month');
     const yearSelect = document.getElementById('ofx-year');
+    const tableYearSelect = document.getElementById('ofx-table-year');
     const balanceInput = document.getElementById('ofx-given-balance');
     
     bankSelect.innerHTML = '<option value="0">Selecione um banco</option>';
@@ -282,6 +283,9 @@ function openImportOFXModal() {
     if (yearSelect) {
         yearSelect.value = currentYear;
     }
+    if (tableYearSelect) {
+        tableYearSelect.value = currentYear;
+    }
     
     // Setar saldo final como 0
     if (balanceInput) {
@@ -300,7 +304,9 @@ function openImportOFXModal() {
 function updateOFXImportedTable() {
     const banks = StorageManager.getBanks();
     const bankSelect = document.getElementById('ofx-bank');
+    const tableYearSelect = document.getElementById('ofx-table-year');
     const tbody = document.querySelector('#importofx-modal table tbody');
+    const selectedYear = tableYearSelect?.value || String(new Date().getFullYear());
     
     tbody.innerHTML = '';
     
@@ -312,7 +318,16 @@ function updateOFXImportedTable() {
         return;
     }
     
-    selectedBank.ofxImported.forEach(ofx => {
+    const filteredOfx = selectedBank.ofxImported
+        .filter(ofx => String(ofx.period).slice(0, 4) === selectedYear)
+        .sort((a, b) => Number(b.period) - Number(a.period));
+    
+    if (filteredOfx.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-2 text-gray-500 text-center">Nenhum arquivo importado em ${selectedYear}</td></tr>`;
+        return;
+    }
+    
+    filteredOfx.forEach(ofx => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-blue-50 border-b border-gray-200';
         
